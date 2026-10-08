@@ -10,8 +10,7 @@ services:
   php:
     build: .
     volumes:
-      - ./html:/usr/share/nginx/html
-      - ./php-config/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
+      - ./html:/usr/share/nginx/html:ro
     depends_on: [mysql]
     restart: always
   mysql:
