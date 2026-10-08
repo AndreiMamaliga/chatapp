@@ -15,7 +15,7 @@ if($a==='register'||$a==='login'){
  $u=trim($in['username']??'');$p=$in['password']??'';
  if($a==='register'){
   if(!preg_match('/^[A-Za-z0-9_]{3,20}$/',$u)||strlen($p)<6)out(['error'=>'Username 3-20 caractere, parolă min 6'],400);
-  try{q('INSERT INTO users(username,password) VALUES(?,?)',[$u,password_hash($p,PASSWORD_DEFAULT)]);}catch(PDOException $e){out(['error'=>'Username ocupat'],400);}
+  try{q('INSERT INTO users(username,password) VALUES(?,?)',[$u,password_hash($p,PASSWORD_DEFAULT)]);$newUid=$pdo->lastInsertId();q('INSERT INTO rooms(is_group,is_self,created_by) VALUES(0,1,?)',[$newUid]);$sr=$pdo->lastInsertId();q('INSERT INTO room_members(room_id,user_id) VALUES(?,?)',[$sr,$newUid]);}catch(PDOException $e){out(['error'=>'Username ocupat'],400);}
  }
  $r=q('SELECT * FROM users WHERE username=?',[$u])->fetch();
  if(!$r||!password_verify($p,$r['password']))out(['error'=>'Date incorecte'],401);
@@ -31,7 +31,7 @@ switch($a){
 case 'me':
  out(q('SELECT id,username FROM users WHERE id=?',[$uid])->fetch());
 case 'rooms':
- $rows=q('SELECT r.id,r.is_group,r.name,
+ $rows=q('SELECT r.id,r.is_group,r.is_self,r.name,
   (SELECT m.body FROM messages m WHERE m.room_id=r.id AND m.deleted=0 ORDER BY m.id DESC LIMIT 1) lastmsg,
   (SELECT m.created_at FROM messages m WHERE m.room_id=r.id AND m.deleted=0 ORDER BY m.id DESC LIMIT 1) lasttime,
   (SELECT MAX(m.id) FROM messages m WHERE m.room_id=r.id) last_id,
@@ -39,7 +39,7 @@ case 'rooms':
   (SELECT GROUP_CONCAT(u.username) FROM room_members x JOIN users u ON u.id=x.user_id WHERE x.room_id=r.id AND x.user_id<>?) others,
   (SELECT COUNT(*) FROM room_members WHERE room_id=r.id) memcount
   FROM rooms r JOIN room_members rm ON rm.room_id=r.id AND rm.user_id=? ORDER BY COALESCE(last_id,0) DESC, r.id DESC',[$uid,$uid,$uid])->fetchAll();
- foreach($rows as &$r){if(!$r['is_group'])$r['name']=$r['others'];$r['color']=colorOf($r['name']??'?');}
+ foreach($rows as &$r){if(!empty($r['is_self']))$r['name']='Saved messages';elseif(!$r['is_group'])$r['name']=$r['others'];$r['color']=colorOf($r['name']??'?');}
  out($rows);
 case 'users':
  $s='%'.str_replace(['%','_'],'',$_GET['q']??'').'%';
@@ -215,5 +215,13 @@ case 'password_change':
  if(!$r||!password_verify($old,$r['password']))out(['error'=>'Parola veche incorecta'],401);
  q('UPDATE users SET password=? WHERE id=?',[password_hash($new,PASSWORD_DEFAULT),$uid]);
  out(['ok'=>1]);
+case 'self_chat':
+ $r=q('SELECT id FROM rooms WHERE is_self=1 AND created_by=? LIMIT 1',[$uid])->fetchColumn();
+ if(!$r){
+   q('INSERT INTO rooms(is_group,is_self,created_by) VALUES(0,1,?)',[$uid]);
+   $r=$pdo->lastInsertId();
+   q('INSERT INTO room_members(room_id,user_id) VALUES(?,?)',[$r,$uid]);
+ }
+ out(['id'=>$r]);
 }
 out(['error'=>'unknown'],404);

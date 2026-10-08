@@ -801,6 +801,34 @@ dialog h3{
 .up-msg{background:linear-gradient(135deg,var(--primary),var(--secondary));color:var(--dark)}
 .up-msg:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(14,227,255,.4)}
 
+
+/* SELF-CHAT + VIEW-ONCE COMPACT */
+.view-once-msg{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px !important;
+  background:linear-gradient(135deg,rgba(248,69,255,.18),rgba(14,227,255,.1)) !important;
+  border:1px dashed var(--secondary) !important;
+  cursor:pointer;max-width:220px !important;
+  transition:all .2s;
+}
+.view-once-msg:hover{transform:scale(1.02);box-shadow:0 0 20px rgba(248,69,255,.3)}
+.view-once-msg .vo-lbl{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+.view-once-viewed{
+  opacity:.5;font-style:italic;font-size:12px !important;
+  padding:6px 14px !important;
+}
+.vo-modal{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);animation:fadeIn .2s}
+.vo-modal-content{background:var(--dark);border:1px solid var(--secondary);border-radius:20px;padding:34px;max-width:min(520px,90vw);box-shadow:0 0 80px rgba(248,69,255,.5);position:relative;text-align:center;animation:pop .3s}
+.vo-modal-timer{position:absolute;top:-18px;right:-18px;background:linear-gradient(135deg,var(--secondary),var(--primary));color:var(--dark);width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;box-shadow:0 0 30px rgba(248,69,255,.7)}
+.vo-modal-body{font-size:16px;line-height:1.6;color:var(--text);margin:14px 0 22px;white-space:pre-wrap;word-wrap:break-word;max-height:60vh;overflow:auto;text-align:left}
+.vo-modal-close{background:linear-gradient(135deg,var(--primary),var(--secondary));color:var(--dark);border:0;padding:12px 28px;border-radius:10px;font-weight:800;cursor:pointer;font-size:13px;letter-spacing:1.5px;text-transform:uppercase}
+.vo-modal-close:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(14,227,255,.4)}
+
+
+#f:not([style*="display: none"]) ~ #emojis{display:none}
+/* Input ascuns când empty e vizibil */
+#empty:not([style*="display: none"]) ~ #f{display:none}
+
 </style>
 </head>
 <body>
@@ -822,6 +850,7 @@ dialog h3{
         <div class="av sm" id="meAv" style="background:linear-gradient(135deg,#0fe3ff,#f845ff);cursor:pointer"></div>
         <h2 id="me">...</h2>
         <span class="sp"></span>
+        <button class="ghost" id="selfBtn" title="Mesaje salvate">📝</button>
         <button class="ghost" id="themeBtn" title="Temă">🌙</button>
         <button class="ghost" id="out" title="Ieși">⎋</button>
       </header>
@@ -980,6 +1009,7 @@ async function enter(){
   loadRooms();
   clearInterval(timer);
   timer=setInterval(tick,2000);
+  updateInputVisibility();
 }
 async function sign(a){
   try{await api(a,{username:$('#u').value,password:$('#p').value});enter()}
@@ -990,7 +1020,7 @@ $('#reg').onclick=()=>sign('register');
 $('#p').onkeydown=e=>e.key==='Enter'&&sign('login');
 $('#u').onkeydown=e=>e.key==='Enter'&&$('#p').focus();
 $('#out').onclick=async()=>{await api('logout',{});room=null;auth()};
-$('#bk').onclick=()=>{room=null;$('#app').classList.remove('open')};
+$('#bk').onclick=()=>{room=null;$('#app').classList.remove('open');updateInputVisibility();};
 
 // ========== UTILS ==========
 function fmtTime(t){
@@ -1030,7 +1060,7 @@ async function loadRooms(){
     if(r.avatar){av.style.backgroundImage='url('+r.avatar+')';av.textContent=''}
     else{av.style.cssText=avStyle(r.name||'?');av.textContent=r.is_group==1?'👥':(r.name||'?')[0].toUpperCase()}
     const info=document.createElement('div');info.className='info';
-    const b=document.createElement('b');b.textContent=r.name||'?';
+    const b=document.createElement('b');b.textContent = (r.is_self==1 ? '📝 ' : '') + (r.name || '?');
     const s=document.createElement('small');
     s.textContent=r.lastmsg||'Fără mesaje';
     info.append(b,s);
@@ -1069,6 +1099,7 @@ async function openRoom(r){
   $('#info').hidden=r.is_group!=1;
   $('#app').classList.add('open');
   $('#rbar').classList.remove('on');
+  updateInputVisibility();
   setTimeout(()=>$('#t').focus(),100);
   tick();loadRooms();loadRoomMembers();
 }
@@ -2048,6 +2079,65 @@ async function openUserProfile(idOrName){
     }
   }, true);
 })();
+
+
+// ========== VIEW-ONCE MODAL + SELF CHAT ==========
+function openVOModal(x){
+  const modal = document.createElement('div');
+  modal.className = 'vo-modal';
+  const content = document.createElement('div');
+  content.className = 'vo-modal-content';
+  content.innerHTML = '<div class="vo-modal-timer">5</div>'
+    + '<div class="vo-modal-body">' + String(x.body||'').replace(/</g,'&lt;') + '</div>'
+    + '<button type="button" class="vo-modal-close">Închide</button>';
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+
+  let timer = 5;
+  const timerEl = content.querySelector('.vo-modal-timer');
+  const interval = setInterval(function(){
+    timer--;
+    timerEl.textContent = timer;
+    if(timer <= 0) closeModal();
+  }, 1000);
+
+  function closeModal(){
+    clearInterval(interval);
+    if(modal.parentNode) modal.remove();
+    api('view_once_read', {id: +x.id}).then(function(){ reloadMsgs(); }).catch(function(){});
+  }
+
+  content.querySelector('.vo-modal-close').onclick = closeModal;
+  modal.onclick = function(e){ if(e.target === modal) closeModal(); };
+}
+
+(function bindSelfBtn(){
+  const btn = document.getElementById('selfBtn');
+  if(!btn) return;
+  btn.onclick = async function(){
+    try{
+      const r = await api('self_chat');
+      await loadRooms();
+      openRoom({id: r.id, name: '📝 Mesaje salvate', is_group: 0, is_self: 1});
+    }catch(e){ toast(e, 'err'); }
+  };
+})();
+
+
+// ========== EMPTY STATE — ascunde input când nu e conversație ==========
+function updateInputVisibility(){
+  const f = document.getElementById('f');
+  const empty = document.getElementById('empty');
+  const scrollBtn = document.getElementById('scrollBtn');
+  if(!f) return;
+  if(room){
+    f.style.display = '';
+    if(empty) empty.style.display = 'none';
+  } else {
+    f.style.display = 'none';
+    if(scrollBtn) scrollBtn.classList.remove('on');
+  }
+}
 
 // ========== INIT ==========
 (function(){
