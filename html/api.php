@@ -68,7 +68,7 @@ case 'members':
  out(q('SELECT u.id,u.username,u.last_seen>NOW()-INTERVAL 30 SECOND online FROM room_members x JOIN users u ON u.id=x.user_id WHERE x.room_id=? ORDER BY online DESC,u.username',[$r])->fetchAll());
 case 'msgs':
  $r=(int)($_GET['room']??0);if(!member($r))out(['error'=>'Interzis'],403);
- $ms=q('SELECT * FROM (SELECT m.id,m.user_id,u.username,m.body,m.type,m.file_url,m.file_name,m.created_at,m.edited,m.deleted,m.reply_id,m.pinned,rm.body reply_body,ru.username reply_user,
+ $ms=q('SELECT * FROM (SELECT m.id,m.user_id,u.username,m.body,m.type,m.file_url,m.file_name,m.created_at,m.edited,m.deleted,m.reply_id,m.pinned,m.view_once,rm.body reply_body,ru.username reply_user,
   (SELECT GROUP_CONCAT(CONCAT(rx.emoji,":",rx.cnt)) FROM (SELECT emoji,COUNT(*) cnt FROM reactions WHERE message_id=m.id GROUP BY emoji) rx) reactions,
   (SELECT GROUP_CONCAT(CONCAT(x.user_id,":",x.emoji)) FROM reactions x WHERE x.message_id=m.id) my_reactions
   FROM messages m JOIN users u ON u.id=m.user_id LEFT JOIN messages rm ON rm.id=m.reply_id LEFT JOIN users ru ON ru.id=rm.user_id WHERE m.room_id=? AND m.id>? ORDER BY m.id DESC LIMIT 100) t ORDER BY id',[$r,(int)($_GET['after']??0)])->fetchAll();
@@ -79,12 +79,12 @@ case 'msgs':
 case 'typing':
  $r=(int)($in['room_id']??0);q('UPDATE room_members SET typing_at=NOW() WHERE room_id=? AND user_id=?',[$r,$uid]);out(['ok'=>1]);
 case 'send':
- $r=(int)($in['room_id']??0);$b=trim($in['body']??'');$rep=(int)($in['reply_id']??0)?:null;$ty=$in['type']??'text';$fu=$in['file_url']??null;$fn=$in['file_name']??null;
+ $r=(int)($in['room_id']??0);$b=trim($in['body']??'');$rep=(int)($in['reply_id']??0)?:null;$ty=$in['type']??'text';$fu=$in['file_url']??null;$fn=$in["file_name"]??null;$vo=!empty($in["view_once"])?1:0;
  if(!member($r))out(['error'=>'Interzis'],403);
  if($ty==='text'&&($b===''||mb_strlen($b)>2000))out(['error'=>'Mesaj invalid'],400);
  $cnt=q('SELECT COUNT(*) FROM messages WHERE user_id=? AND created_at>NOW()-INTERVAL 30 SECOND',[$uid])->fetchColumn();
  if($cnt>20)out(['error'=>'Prea rapid! Așteaptă puțin'],429);
- q('INSERT INTO messages(room_id,user_id,body,type,file_url,file_name,reply_id) VALUES(?,?,?,?,?,?,?)',[$r,$uid,$b,$ty,$fu,$fn,$rep]);out(['id'=>$pdo->lastInsertId()]);
+ q('INSERT INTO messages(room_id,user_id,body,type,file_url,file_name,reply_id,view_once) VALUES(?,?,?,?,?,?,?,?)',[$r,$uid,$b,$ty,$fu,$fn,$rep,$vo]);out(['id'=>$pdo->lastInsertId()]);
 case 'upload':
  if(!$uid)out(['error'=>'auth'],401);
  $r=(int)($_POST['room_id']??0);if(!member($r))out(['error'=>'Interzis'],403);
@@ -169,5 +169,42 @@ case 'user_profile':
  if(!$d)out(['error'=>'User inexistent'],404);
  $d['online']=$d['last_seen']>date('Y-m-d H:i:s',time()-30);
  out($d);
+case 'view_once_read':
+ $id=(int)($in['id']??0);
+ $m=q('SELECT room_id,view_once FROM messages WHERE id=?',[$id])->fetch();
+ if(!$m||!member($m['room_id']))out(['error'=>'Interzis'],403);
+ q('INSERT IGNORE INTO message_views(message_id,user_id) VALUES(?,?)',[$id,$uid]);
+ q('UPDATE messages SET body="",file_url=NULL WHERE id=?',[$id]);
+ out(['ok'=>1]);
+case 'poll_create':
+ $r=(int)($in['room_id']??0);$ques=trim($in['question']??'');$opts=(array)($in['options']??[]);
+ if(!member($r)||$ques===''||count($opts)<2||count($opts)>10)out(['error'=>'Date invalide'],400);
+ q('INSERT INTO messages(room_id,user_id,body,type) VALUES(?,?,?,?)',[$r,$uid,$ques,'poll']);
+ $mid=$pdo->lastInsertId();
+ q('INSERT INTO polls(message_id,question,options,multiple,anonymous) VALUES(?,?,?,?,?)',[$mid,$ques,json_encode(array_values($opts),JSON_UNESCAPED_UNICODE),!empty($in['multiple'])?1:0,!empty($in['anonymous'])?1:0]);
+ out(['id'=>$mid]);
+case 'poll_vote':
+ $mid=(int)($in['message_id']??0);$idx=(int)($in['option_idx']??-1);
+ $p=q('SELECT p.id,p.options,p.multiple FROM polls p JOIN messages m ON m.id=p.message_id WHERE p.message_id=?',[$mid])->fetch();
+ if(!$p||$idx<0)out(['error'=>'Sondaj invalid'],400);
+ $m=q('SELECT room_id FROM messages WHERE id=?',[$mid])->fetch();
+ if(!member($m['room_id']))out(['error'=>'Interzis'],403);
+ if($p['multiple']){
+   $ex=q('SELECT id FROM poll_votes WHERE poll_id=? AND user_id=? AND option_idx=?',[$p['id'],$uid,$idx])->fetch();
+   if($ex)q('DELETE FROM poll_votes WHERE id=?',[$ex['id']]);
+   else q('INSERT INTO poll_votes(poll_id,user_id,option_idx) VALUES(?,?,?)',[$p['id'],$uid,$idx]);
+ } else {
+   q('DELETE FROM poll_votes WHERE poll_id=? AND user_id=?',[$p['id'],$uid]);
+   q('INSERT INTO poll_votes(poll_id,user_id,option_idx) VALUES(?,?,?)',[$p['id'],$uid,$idx]);
+ }
+ out(['ok'=>1]);
+case 'poll_results':
+ $mid=(int)($_GET['message_id']??0);
+ $p=q('SELECT id,options,multiple,anonymous FROM polls WHERE message_id=?',[$mid])->fetch();
+ if(!$p)out(['error'=>'Lipsă'],404);
+ $r=q('SELECT option_idx,COUNT(*) cnt FROM poll_votes WHERE poll_id=? GROUP BY option_idx',[$p['id']])->fetchAll();
+ $votes=[];foreach($r as $row)$votes[(int)$row['option_idx']]=(int)$row['cnt'];
+ $my=q('SELECT option_idx FROM poll_votes WHERE poll_id=? AND user_id=?',[$p['id'],$uid])->fetchAll(PDO::FETCH_COLUMN);
+ out(['options'=>json_decode($p['options'],true),'votes'=>$votes,'my'=>array_map('intval',$my),'multiple'=>(int)$p['multiple'],'anonymous'=>(int)$p['anonymous']]);
 }
 out(['error'=>'unknown'],404);

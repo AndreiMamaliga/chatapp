@@ -739,6 +739,46 @@ dialog h3{
 #emojis .emoji-grid span{font-size:22px;cursor:pointer;padding:5px;border-radius:6px;text-align:center;transition:all .12s;user-select:none}
 #emojis .emoji-grid span:hover{background:rgba(14,227,255,.15);transform:scale(1.25)}
 
+
+/* POLL_MODAL_V1 */
+.poll-card{margin-top:8px;padding:12px;background:rgba(14,227,255,.06);border:1px solid var(--bd);border-radius:10px;min-width:240px;max-width:340px}
+.poll-card h4{margin:0 0 10px;font-size:14px;color:var(--primary);font-weight:700;letter-spacing:.5px}
+.poll-opt{position:relative;margin-bottom:6px;padding:9px 12px;background:rgba(255,255,255,.04);border:1px solid transparent;border-radius:8px;cursor:pointer;font-size:13px;transition:all .15s;overflow:hidden}
+.poll-opt:hover{background:rgba(14,227,255,.12);border-color:var(--bd)}
+.poll-opt.voted{border-color:var(--primary);background:rgba(14,227,255,.15)}
+.poll-opt .bar{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(14,227,255,.35),rgba(248,69,255,.25));transition:width .35s;z-index:0}
+.poll-opt .lbl{position:relative;z-index:1;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.poll-opt .cnt{font-size:11px;color:var(--text-dim);white-space:nowrap}
+.poll-opt.voted .cnt{color:var(--primary);font-weight:700}
+.poll-total{text-align:center;font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.5px;text-transform:uppercase}
+
+.view-once-box{margin-top:8px;padding:14px;background:linear-gradient(135deg,rgba(248,69,255,.15),rgba(14,227,255,.08));border:1px dashed var(--secondary);border-radius:10px;text-align:center;min-width:180px}
+.view-once-box .vo-icon{font-size:34px;margin-bottom:6px}
+.view-once-box .vo-label{font-size:11px;color:var(--text-dim);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.view-once-box .vo-open{background:linear-gradient(135deg,var(--secondary),var(--primary));color:var(--dark);border:0;padding:7px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:12px;letter-spacing:1px;text-transform:uppercase}
+.view-once-box .vo-open:hover{transform:scale(1.05)}
+.view-once-box .vo-read{color:var(--success);font-weight:600;font-size:13px}
+
+#pollModal{border:1px solid var(--bd);border-radius:14px;padding:24px;width:min(500px,calc(100vw - 40px));background:var(--panel);color:var(--text);position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.7);z-index:1000}
+#pollModal::backdrop{background:rgba(0,0,0,.7)}
+#pollModal h3{margin:0 0 16px;font-size:17px;text-transform:uppercase;letter-spacing:1.5px;background:linear-gradient(90deg,var(--primary),var(--secondary));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
+#pollModal label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--primary);font-weight:700;margin-bottom:6px}
+#pollModal input[type=text]{width:100%;padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid var(--bd);border-radius:8px;color:var(--text);outline:none;font:inherit}
+#pollModal input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(14,227,255,.2)}
+#pollModal .poll-opt-row{display:flex;gap:6px;margin-bottom:6px}
+#pollModal .poll-opt-row input{flex:1}
+#pollModal .rm-opt{background:rgba(255,66,102,.15);border:0;color:var(--danger);padding:0 14px;border-radius:8px;cursor:pointer;font-size:18px;font-weight:700}
+#pollModal .rm-opt:hover{background:rgba(255,66,102,.3)}
+#pollModal .add-opt{width:100%;padding:9px;background:rgba(14,227,255,.08);border:1px dashed var(--bd);border-radius:8px;color:var(--primary);cursor:pointer;font-size:13px;font-weight:600;margin-top:6px}
+#pollModal .add-opt:hover{background:rgba(14,227,255,.15);border-color:var(--primary)}
+#pollModal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+#pollModal .actions button{padding:10px 20px;border:0;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:1px}
+#pollModal .btn-cancel{background:transparent;color:var(--text-dim)}
+#pollModal .btn-cancel:hover{color:var(--text)}
+#pollModal .btn-create{background:linear-gradient(135deg,var(--primary),var(--secondary));color:var(--dark)}
+#pollModal .btn-create:hover{box-shadow:0 6px 20px rgba(14,227,255,.3)}
+#pollModal .chk-row{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--text-dim);cursor:pointer;text-transform:none;letter-spacing:0}
+#pollModal .chk-row input{width:auto;cursor:pointer}
 </style>
 </head>
 <body>
@@ -804,6 +844,8 @@ dialog h3{
         <button type="button" class="ico" id="fileBtn" title="Fișier">📎</button>
         <button type="button" class="ico" id="emoBtn" title="Emoji">😊</button>
         <button type="button" class="ico" id="voiceBtn" title="Voice">🎙️</button>
+        <button type="button" class="ico" id="pollBtn" title="Sondaj">📊</button>
+        <button type="button" class="ico" id="voBtn" title="Mesaj efemer">👁️</button>
         <textarea id="t" placeholder="Scrie un mesaj..." autocomplete="off" rows="1"></textarea>
         <button class="send" type="submit">➤</button>
       </form>
@@ -1036,6 +1078,23 @@ async function tick(){
         d.append(p);
       }
       if(x.deleted){d.append(document.createTextNode('🚫 mesaj șters'))}
+      else if(x.type==='poll'){
+        const pc=document.createElement('div');pc.className='poll-card';
+        pc.innerHTML='<h4>📊 '+String(x.body||'').replace(/</g,'&lt;')+'</h4><div class="poll-body">Se incarca...</div>';
+        d.append(pc);
+        setTimeout(function(){renderPollCard(pc,+x.id)},10);
+      }
+      else if(x.view_once==1 && !mine){
+        const vo=document.createElement('div');vo.className='view-once-box';
+        vo.innerHTML='<div class="vo-icon">👁️</div><div class="vo-label">Mesaj efemer</div><button type="button" class="vo-open">Deschide</button>';
+        vo.querySelector('.vo-open').onclick=async function(){
+          try{
+            await api('view_once_read',{id:+x.id});
+            vo.innerHTML='<div class="vo-read">✓ Citit - continut sters</div>';
+          }catch(e){toast(e,'err')}
+        };
+        d.append(vo);
+      }
       else if(x.type==='image'&&x.file_url){
         const img=document.createElement('img');img.src=x.file_url;img.loading='lazy';
         img.onclick=()=>lightbox(x.file_url);d.append(img);
@@ -1647,6 +1706,117 @@ document.addEventListener('keydown', e => {
     console.log('[EMOJI] Picker mutat în #f');
   }
 })();
+
+
+// ========== POLL + VIEW-ONCE ==========
+function openPollModal(){
+  if(!room){toast('Deschide o conversație','warn');return}
+  const m=document.createElement('dialog');
+  m.id='pollModal';
+  m.innerHTML='<h3>📊 Sondaj nou</h3>'
+    +'<label>Întrebare</label>'
+    +'<input id="pQ" type="text" placeholder="Ce mâncăm la prânz?" maxlength="200">'
+    +'<label style="margin-top:16px">Opțiuni (2-10)</label>'
+    +'<div id="pOpts"></div>'
+    +'<button type="button" class="add-opt" id="pAdd">+ Adaugă opțiune</button>'
+    +'<label class="chk-row"><input type="checkbox" id="pMulti"> Permite mai multe răspunsuri</label>'
+    +'<div class="actions">'
+    +'<button type="button" class="btn-cancel" id="pCancel">Anulează</button>'
+    +'<button type="button" class="btn-create" id="pCreate">Creează</button>'
+    +'</div>';
+  document.body.appendChild(m);
+  m.showModal();
+  const opts=document.getElementById('pOpts');
+  function addOpt(){
+    const n=opts.children.length;
+    if(n>=10)return toast('Maxim 10 opțiuni','warn');
+    const row=document.createElement('div');
+    row.className='poll-opt-row';
+    row.innerHTML='<input type="text" placeholder="Opțiunea '+(n+1)+'" maxlength="100">'
+      +(n>=2?'<button type="button" class="rm-opt">×</button>':'');
+    opts.appendChild(row);
+    const rm=row.querySelector('.rm-opt');
+    if(rm)rm.addEventListener('click',function(){
+      if(opts.children.length<=2)return toast('Minim 2 opțiuni','warn');
+      row.remove();
+      [...opts.querySelectorAll('input')].forEach(function(inp,i){inp.placeholder='Opțiunea '+(i+1)});
+    });
+  }
+  addOpt();addOpt();
+  document.getElementById('pAdd').onclick=addOpt;
+  document.getElementById('pCancel').onclick=function(){m.close();m.remove()};
+  document.getElementById('pCreate').onclick=async function(){
+    const q=document.getElementById('pQ').value.trim();
+    const arr=[].slice.call(opts.querySelectorAll('input')).map(function(i){return i.value.trim()}).filter(Boolean);
+    const multi=document.getElementById('pMulti').checked;
+    if(!q)return toast('Scrie întrebarea','warn');
+    if(arr.length<2)return toast('Minim 2 opțiuni completate','warn');
+    try{
+      await api('poll_create',{room_id:room.id,question:q,options:arr,multiple:multi});
+      m.close();m.remove();
+      reloadMsgs();
+      toast('📊 Sondaj trimis','ok');
+    }catch(e){toast(e,'err')}
+  };
+}
+
+async function renderPollCard(box,mid){
+  try{
+    let body = box.querySelector('.poll-body');
+    if(!body){
+      body = document.createElement('div');
+      body.className = 'poll-body';
+      box.appendChild(body);
+    }
+    const r=await api('poll_results',0,'&message_id='+mid);
+    if(!r || !r.options || !r.options.length){
+      body.innerHTML = '<div style="color:var(--text-dim);font-size:12px;padding:8px">Fără opțiuni</div>';
+      return;
+    }
+    const total=Object.values(r.votes).reduce(function(a,b){return a+b},0);
+    const html=r.options.map(function(opt,i){
+      const cnt=r.votes[i]||0;
+      const pct=total?Math.round(cnt*100/total):0;
+      const voted=r.my.indexOf(i)>=0;
+      return '<div class="poll-opt'+(voted?' voted':'')+'" data-idx="'+i+'">'
+        +'<div class="bar" style="width:'+pct+'%"></div>'
+        +'<div class="lbl"><span>'+(voted?'✓ ':'')+String(opt).replace(/</g,'&lt;')+'</span><span class="cnt">'+cnt+' · '+pct+'%</span></div>'
+        +'</div>';
+    }).join('');
+    body.innerHTML=html+'<div class="poll-total">'+total+' voturi'+(r.multiple?' · multiplu':'')+'</div>';
+    [].slice.call(body.querySelectorAll('.poll-opt')).forEach(function(el){
+      el.onclick=async function(){
+        try{await api('poll_vote',{message_id:mid,option_idx:+el.dataset.idx});renderPollCard(box,mid)}catch(e){toast(e,'err')}
+      };
+    });
+  }catch(e){
+    console.error('[POLL] Error:', e);
+    let body = box.querySelector('.poll-body');
+    if(!body){
+      body = document.createElement('div');
+      body.className = 'poll-body';
+      box.appendChild(body);
+    }
+    body.innerHTML = '<div style="color:var(--danger);font-size:12px;padding:8px">Eroare: '+e+'</div>';
+  }
+}
+
+function bindPollButtons(){
+  const pb=document.getElementById('pollBtn');
+  if(pb)pb.onclick=openPollModal;
+  const vb=document.getElementById('voBtn');
+  if(vb)vb.onclick=async function(){
+    if(!room){toast('Deschide o conversație','warn');return}
+    const txt=prompt('Mesaj care se va șterge după citire:');
+    if(!txt)return;
+    try{
+      await api('send',{room_id:room.id,body:txt,view_once:1});
+      reloadMsgs();
+      toast('👁️ Mesaj efemer trimis','ok');
+    }catch(e){toast(e,'err')}
+  };
+}
+bindPollButtons();
 
 // ========== INIT ==========
 enter().catch(auth);
