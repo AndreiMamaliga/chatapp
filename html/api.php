@@ -164,7 +164,9 @@ case 'profile_avatar':
  out(['url'=>$url]);
 case 'user_profile':
  $oid=(int)($_GET['id']??0);
- if(!$oid)out(['error'=>'ID lipsă'],400);
+ $un=trim($_GET['username']??'');
+ if(!$oid && $un)$oid=(int)q('SELECT id FROM users WHERE username=?',[$un])->fetchColumn();
+ if(!$oid)out(['error'=>'User inexistent'],404);
  $d=q('SELECT id,username,avatar,bio,status,last_seen FROM users WHERE id=?',[$oid])->fetch();
  if(!$d)out(['error'=>'User inexistent'],404);
  $d['online']=$d['last_seen']>date('Y-m-d H:i:s',time()-30);
