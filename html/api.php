@@ -206,5 +206,12 @@ case 'poll_results':
  $votes=[];foreach($r as $row)$votes[(int)$row['option_idx']]=(int)$row['cnt'];
  $my=q('SELECT option_idx FROM poll_votes WHERE poll_id=? AND user_id=?',[$p['id'],$uid])->fetchAll(PDO::FETCH_COLUMN);
  out(['options'=>json_decode($p['options'],true),'votes'=>$votes,'my'=>array_map('intval',$my),'multiple'=>(int)$p['multiple'],'anonymous'=>(int)$p['anonymous']]);
+case 'password_change':
+ $old=$in['old_password']??'';$new=$in['new_password']??'';
+ if(strlen($new)<6)out(['error'=>'Parola noua minim 6 caractere'],400);
+ $r=q('SELECT password FROM users WHERE id=?',[$uid])->fetch();
+ if(!$r||!password_verify($old,$r['password']))out(['error'=>'Parola veche incorecta'],401);
+ q('UPDATE users SET password=? WHERE id=?',[password_hash($new,PASSWORD_DEFAULT),$uid]);
+ out(['ok'=>1]);
 }
 out(['error'=>'unknown'],404);

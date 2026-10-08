@@ -876,6 +876,13 @@ dialog h3{
       <textarea id="editBio" placeholder="Scrie ceva despre tine..." maxlength="300" rows="3"></textarea>
     </div>
     <button class="profile-save" id="saveProf" type="button">💾 Salvează</button>
+    <div class="p-card" style="margin-top:16px">
+      <label>🔐 Schimbă parola</label>
+      <input id="oldPass" type="password" placeholder="Parola veche" style="margin-bottom:8px">
+      <input id="newPass" type="password" placeholder="Parola nouă (min 6 caractere)" style="margin-bottom:8px">
+      <input id="newPass2" type="password" placeholder="Confirmă parola nouă" style="margin-bottom:12px">
+      <button type="button" id="changePassBtn" style="width:100%;padding:12px;background:rgba(255,66,102,.15);color:#ff4266;border:1px solid #ff4266;border-radius:8px;font-weight:700;cursor:pointer;letter-spacing:1px;text-transform:uppercase;font-size:13px">🔐 Schimbă parola</button>
+    </div>
   </div>
 </div>
 
@@ -1916,6 +1923,25 @@ function bindPollButtons(){
 bindPollButtons();
 
 // ========== INIT ==========
+(function(){
+  var btn = document.getElementById('changePassBtn');
+  if(!btn) return;
+  btn.onclick = async function(){
+    var o = document.getElementById('oldPass').value;
+    var n = document.getElementById('newPass').value;
+    var c = document.getElementById('newPass2').value;
+    if(!o || !n || !c){ toast('Completează toate câmpurile', 'warn'); return; }
+    if(n.length < 6){ toast('Parola nouă minim 6 caractere', 'warn'); return; }
+    if(n !== c){ toast('Parolele noi nu coincid', 'warn'); return; }
+    try{
+      await api('password_change', { old_password: o, new_password: n });
+      document.getElementById('oldPass').value = '';
+      document.getElementById('newPass').value = '';
+      document.getElementById('newPass2').value = '';
+      toast('✅ Parolă schimbată cu succes', 'ok');
+    }catch(e){ toast(e, 'err'); }
+  };
+})();
 enter().catch(auth);
 </script>
 </body>
