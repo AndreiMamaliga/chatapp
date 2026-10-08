@@ -1582,29 +1582,116 @@ $('#avatarInput').onchange=async function(){
 };
 
 
-// ========== FIX TASTARE (bypass policy corporate) ==========
+// ========== FIX TASTARE COMPLET ==========
 (function(){
-  const isEditable = el => el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA');
+  function isEditable(el){
+    return el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA');
+  }
+
+  function insertText(el, text){
+    const s = el.selectionStart ?? el.value.length;
+    const e = el.selectionEnd ?? el.value.length;
+    el.value = el.value.slice(0, s) + text + el.value.slice(e);
+    const pos = s + text.length;
+    try { el.selectionStart = el.selectionEnd = pos; } catch(err){}
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  function deleteChar(el, dir){
+    const s = el.selectionStart ?? 0;
+    const e = el.selectionEnd ?? 0;
+    if(s !== e){
+      el.value = el.value.slice(0, s) + el.value.slice(e);
+      try { el.selectionStart = el.selectionEnd = s; } catch(err){}
+    } else if(dir === 'back' && s > 0){
+      el.value = el.value.slice(0, s-1) + el.value.slice(s);
+      try { el.selectionStart = el.selectionEnd = s-1; } catch(err){}
+    } else if(dir === 'del' && s < el.value.length){
+      el.value = el.value.slice(0, s) + el.value.slice(s+1);
+      try { el.selectionStart = el.selectionEnd = s; } catch(err){}
+    }
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  function moveCursor(el, dir){
+    const pos = el.selectionStart ?? 0;
+    let newPos = pos;
+    if(dir === 'left') newPos = Math.max(0, pos - 1);
+    else if(dir === 'right') newPos = Math.min(el.value.length, pos + 1);
+    else if(dir === 'home') newPos = 0;
+    else if(dir === 'end') newPos = el.value.length;
+    try { el.selectionStart = el.selectionEnd = newPos; } catch(err){}
+  }
+
+  function focusNext(el, backward){
+    const all = Array.from(document.querySelectorAll('input:not([type=hidden]):not([disabled]), textarea:not([disabled])'));
+    const visible = all.filter(function(x){ return x.offsetParent !== null; });
+    const idx = visible.indexOf(el);
+    if(idx === -1) return;
+    let next;
+    if(backward){
+      next = idx > 0 ? visible[idx - 1] : visible[visible.length - 1];
+    } else {
+      next = idx < visible.length - 1 ? visible[idx + 1] : visible[0];
+    }
+    if(next) next.focus();
+  }
+
   document.addEventListener('keydown', function(e){
-    if (!isEditable(document.activeElement)) return;
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    const passKeys = ['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','Tab','Escape','Enter','Shift','Control','Alt','Meta','CapsLock'];
-    if (passKeys.includes(e.key)) return;
-    if (e.key.length !== 1) return;
-    const t = document.activeElement;
-    const before = t.value;
-    const s = t.selectionStart;
-    const en = t.selectionEnd;
-    setTimeout(() => {
-      if (t.value === before && document.activeElement === t) {
-        const val = t.value;
-        t.value = val.slice(0, s) + e.key + val.slice(en);
-        t.selectionStart = t.selectionEnd = s + 1;
-        t.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-    }, 0);
+    const el = document.activeElement;
+    if(!isEditable(el)) return;
+    if(e.ctrlKey || e.metaKey) return;
+
+    const key = e.key;
+
+    // Litere, cifre, simboluri
+    if(key.length === 1 && !e.altKey){
+      const before = el.value;
+      setTimeout(function(){
+        if(el.value === before && document.activeElement === el){
+          insertText(el, key);
+        }
+      }, 0);
+      return;
+    }
+
+    // Backspace
+    if(key === 'Backspace'){
+      const before = el.value;
+      setTimeout(function(){
+        if(el.value === before && document.activeElement === el){
+          deleteChar(el, 'back');
+        }
+      }, 0);
+      return;
+    }
+
+    // Delete
+    if(key === 'Delete'){
+      const before = el.value;
+      setTimeout(function(){
+        if(el.value === before && document.activeElement === el){
+          deleteChar(el, 'del');
+        }
+      }, 0);
+      return;
+    }
+
+    // Tab
+    if(key === 'Tab'){
+      e.preventDefault();
+      focusNext(el, e.shiftKey);
+      return;
+    }
+
+    // Săgeți
+    if(key === 'ArrowLeft'){ e.preventDefault(); moveCursor(el, 'left'); return; }
+    if(key === 'ArrowRight'){ e.preventDefault(); moveCursor(el, 'right'); return; }
+    if(key === 'Home'){ e.preventDefault(); moveCursor(el, 'home'); return; }
+    if(key === 'End'){ e.preventDefault(); moveCursor(el, 'end'); return; }
   }, true);
 })();
+
 
 
 // Theme toggle
