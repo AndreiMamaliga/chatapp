@@ -360,16 +360,8 @@ header h2{
 }
 
 /* Emoji picker */
-#emojis{
-  position:absolute;bottom:100%;left:12px;
-  background:var(--dark);border:1px solid var(--bd);
-  border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.5);
-  padding:10px;display:none;
-  width:min(420px,calc(100vw - 40px));
-  max-height:400px;margin-bottom:8px;z-index:10;
-  flex-direction:column;
-}
-#emojis.on{display:flex;animation:msgIn .2s}
+
+
 .emoji-tabs{
   display:flex;gap:2px;padding-bottom:8px;
   border-bottom:1px solid var(--bd);margin-bottom:8px;
@@ -659,7 +651,7 @@ dialog h3{
 [data-theme="light"] #t{background:#f1f5f9;color:#1e293b}
 [data-theme="light"] #auth input{background:#f1f5f9;color:#1e293b}
 [data-theme="light"] dialog{background:#ffffff}
-[data-theme="light"] #emojis{background:#ffffff}
+[data-theme="light"] 
 [data-theme="light"] .toast{background:#ffffff;color:#1e293b}
 [data-theme="light"] .p-card{background:#ffffff}
 [data-theme="light"] .stat-grid{background:#ffffff}
@@ -709,35 +701,15 @@ dialog h3{
 
 /* Emoji picker — poziționare corectă */
 #f{position:relative}
-#emojis{
-  position:absolute !important;
-  bottom:100% !important;
-  left:12px !important;
-  right:12px !important;
-  max-width:420px !important;
-  z-index:100 !important;
-  display:none;
-  background:var(--dark);
-  border:1px solid var(--bd);
-  border-radius:12px;
-  box-shadow:0 8px 30px rgba(0,0,0,.7);
-  padding:10px;
-  flex-direction:column;
-  max-height:380px;
-  margin-bottom:8px;
-  overflow:hidden;
-}
-#emojis.on{
-  display:flex !important;
-  animation:msgIn .2s;
-}
-#emojis .emoji-tabs{display:flex;gap:2px;padding-bottom:8px;border-bottom:1px solid var(--bd);margin-bottom:8px;overflow-x:auto}
-#emojis .emoji-tabs button{background:none;border:0;font-size:18px;padding:6px 10px;cursor:pointer;border-radius:6px;transition:all .15s;flex-shrink:0}
-#emojis .emoji-tabs button:hover{background:rgba(14,227,255,.1)}
-#emojis .emoji-tabs button.on{background:linear-gradient(135deg,rgba(14,227,255,.25),rgba(248,69,255,.15));box-shadow:0 0 10px rgba(14,227,255,.3)}
-#emojis .emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;overflow-y:auto;flex:1;min-height:0;padding-right:4px}
-#emojis .emoji-grid span{font-size:22px;cursor:pointer;padding:5px;border-radius:6px;text-align:center;transition:all .12s;user-select:none}
-#emojis .emoji-grid span:hover{background:rgba(14,227,255,.15);transform:scale(1.25)}
+
+
+
+
+
+
+
+
+
 
 
 /* POLL_MODAL_V1 */
@@ -825,10 +797,61 @@ dialog h3{
 .vo-modal-close:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(14,227,255,.4)}
 
 
-#f:not([style*="display: none"]) ~ #emojis{display:none}
+#f:not([style*="display: none"]) ~ 
 /* Input ascuns când empty e vizibil */
 #empty:not([style*="display: none"]) ~ #f{display:none}
 
+#emojis{
+  position:absolute !important;
+  bottom:100% !important;
+  left:12px !important;
+  right:12px !important;
+  max-width:420px !important;
+  height:340px !important;
+  z-index:100 !important;
+  display:none;
+  background:var(--dark);
+  border:1px solid var(--bd);
+  border-radius:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.7);
+  padding:10px;
+  flex-direction:column;
+  margin-bottom:8px;
+  overflow:hidden;
+}
+#emojis.on{
+  display:flex !important;
+  animation:msgIn .2s;
+}
+#emojis .emoji-tabs{
+  display:flex;gap:2px;padding-bottom:8px;
+  border-bottom:1px solid var(--bd);margin-bottom:8px;
+  overflow-x:auto;flex-shrink:0;
+}
+#emojis .emoji-tabs button{
+  background:none;border:0;font-size:18px;
+  padding:6px 10px;cursor:pointer;border-radius:6px;
+  transition:all .15s;flex-shrink:0;
+}
+#emojis .emoji-tabs button:hover{background:rgba(14,227,255,.1)}
+#emojis .emoji-tabs button.on{background:linear-gradient(135deg,rgba(14,227,255,.25),rgba(248,69,255,.15));box-shadow:0 0 10px rgba(14,227,255,.3)}
+#emojis .emoji-grid{
+  display:grid;grid-template-columns:repeat(8,1fr);gap:4px;
+  overflow-y:auto;flex:1;min-height:0;padding-right:4px;
+  align-content:start;
+}
+#emojis .emoji-grid span{
+  font-size:24px;line-height:32px;height:32px;
+  cursor:pointer;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .12s;
+  user-select:none;
+  overflow:hidden;
+}
+#emojis .emoji-grid span:hover{background:rgba(14,227,255,.15)}
+#emojis .emoji-grid::-webkit-scrollbar{width:6px}
+#emojis .emoji-grid::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--primary),var(--secondary));border-radius:3px}
+#emojis .emoji-grid::-webkit-scrollbar-track{background:transparent}
 </style>
 </head>
 <body>
@@ -1357,11 +1380,14 @@ window.renderEmojiTabs=function(){
     b.textContent=icon;
     b.title=cat;
     if(cat===emojiCurrentCat)b.classList.add('on');
-    b.onclick=function(){
+    b.onclick=function(ev){
+      if(ev){ev.stopPropagation();ev.preventDefault();}
       emojiCurrentCat=cat;
       window.renderEmojiTabs();
       window.renderEmojiGrid();
     };
+    b.addEventListener('mousedown', function(ev){ev.stopPropagation()});
+    b.addEventListener('touchstart', function(ev){ev.stopPropagation()});
     tabs.appendChild(b);
   });
 };
@@ -1419,21 +1445,20 @@ window.renderEmojiGrid=function(search){
 })();
 
 (function bindEmojiBtn(){
-  console.log('[EMOJI] Atașez handler global prin delegation');
+  console.log('[EMOJI] Bind global emoji handler');
+
+  // Toggle când se apasă butonul emoji
   document.addEventListener('click', function(e){
     const btn = e.target.closest('#emoBtn');
     if(!btn) return;
-    console.log('[EMOJI] Click pe emoBtn detectat');
     e.preventDefault();
     e.stopPropagation();
     const p = document.getElementById('emojis');
-    if(!p){
-      console.error('[EMOJI] Panel #emojis lipsă!');
-      return;
-    }
+    if(!p) return;
+    const isOpen = p.classList.contains('on');
     p.classList.toggle('on');
-    console.log('[EMOJI] Panel class:', p.className);
-    if(p.classList.contains('on')){
+    console.log('[EMOJI] Toggle:', !isOpen ? 'OPEN' : 'CLOSED');
+    if(!isOpen){
       setTimeout(function(){
         const s = document.getElementById('emojiSearch');
         if(s) s.focus();
@@ -1441,9 +1466,11 @@ window.renderEmojiGrid=function(search){
     }
   }, true);
 
-  // Închide la click în afară
+  // Închide doar la click ÎN AFARA picker-ului
   document.addEventListener('click', function(e){
+    // Click pe buton → nu închide
     if(e.target.closest('#emoBtn')) return;
+    // Click în picker (inclusiv tabs, search, grid) → nu închide
     if(e.target.closest('#emojis')) return;
     const p = document.getElementById('emojis');
     if(p && p.classList.contains('on')){
@@ -1451,7 +1478,7 @@ window.renderEmojiGrid=function(search){
     }
   }, false);
 
-  console.log('[EMOJI] Btn atașat OK (delegation)');
+  console.log('[EMOJI] Btn atașat OK');
 })();
 
 // ========== UPLOAD ==========
