@@ -68,7 +68,7 @@ case 'members':
  out(q('SELECT u.id,u.username,u.last_seen>NOW()-INTERVAL 30 SECOND online FROM room_members x JOIN users u ON u.id=x.user_id WHERE x.room_id=? ORDER BY online DESC,u.username',[$r])->fetchAll());
 case 'msgs':
  $r=(int)($_GET['room']??0);if(!member($r))out(['error'=>'Interzis'],403);
- $ms=q('SELECT * FROM (SELECT m.id,m.user_id,u.username,m.body,m.type,m.file_url,m.file_name,m.created_at,m.edited,m.deleted,m.reply_id,m.pinned,m.view_once,rm.body reply_body,ru.username reply_user,
+ $ms=q('SELECT * FROM (SELECT m.id,m.user_id,u.username,m.body,m.type,m.file_url,m.file_name,m.created_at,m.edited,m.deleted,m.reply_id,m.pinned,m.view_once,(SELECT COUNT(*) FROM room_members x WHERE x.room_id=m.room_id AND x.user_id<>m.user_id AND x.last_read>=m.id) read_by,(SELECT COUNT(*) FROM room_members x WHERE x.room_id=m.room_id AND x.user_id<>m.user_id) others_total,rm.body reply_body,ru.username reply_user,
   (SELECT GROUP_CONCAT(CONCAT(rx.emoji,":",rx.cnt)) FROM (SELECT emoji,COUNT(*) cnt FROM reactions WHERE message_id=m.id GROUP BY emoji) rx) reactions,
   (SELECT GROUP_CONCAT(CONCAT(x.user_id,":",x.emoji)) FROM reactions x WHERE x.message_id=m.id) my_reactions
   FROM messages m JOIN users u ON u.id=m.user_id LEFT JOIN messages rm ON rm.id=m.reply_id LEFT JOIN users ru ON ru.id=rm.user_id WHERE m.room_id=? AND m.id>? ORDER BY m.id DESC LIMIT 100) t ORDER BY id',[$r,(int)($_GET['after']??0)])->fetchAll();

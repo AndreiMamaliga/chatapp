@@ -1125,6 +1125,16 @@ async function tick(){
       const meta=document.createElement('div');meta.className='meta';
       const t=document.createElement('span');t.textContent=fmtTime(x.created_at);meta.append(t);
       if(x.edited&&!x.deleted){const e=document.createElement('span');e.textContent='✎';meta.append(e)}
+      if(mine && !x.deleted){
+        const readBy = parseInt(x.read_by)||0;
+        const total = parseInt(x.others_total)||0;
+        const allRead = total>0 && readBy>=total;
+        const rc = document.createElement('span');
+        rc.textContent = allRead ? '✓✓' : '✓';
+        rc.style.cssText = 'font-weight:700;font-size:12px;letter-spacing:-1px;margin-left:2px;'+(allRead?'color:#0fe3ff':'opacity:.55');
+        rc.title = readBy+'/'+total+' au citit';
+        meta.append(rc);
+      }
       d.append(meta);
       if(x.reactions){
         const rc=document.createElement('div');rc.className='reacts';
