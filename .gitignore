@@ -1,0 +1,35 @@
+# Backup-uri locale
+html/*.bak
+html/*.bak[0-9]*
+html/*.v[0-9]bak
+html/*.before_*
+html/*.broken_*
+html/*.clean_*
+html/*.fix_*
+html/*.v[0-9]
+html/index.html.before_*
+html/api.php.before_*
+html/api.php.broken_*
+
+# Backup-uri în folderul backups/
+backups/
+
+# Upload-uri utilizatori (nu le punem în Git)
+html/uploads/
+
+# Logs
+*.log
+autodeploy.log
+
+# Configurare Docker cu parole
+config.php
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

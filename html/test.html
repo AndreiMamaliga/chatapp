@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Test Chat</title>
+<style>body{font-family:system-ui;padding:30px;max-width:700px;margin:auto}
+button{padding:12px 24px;font-size:16px;cursor:pointer;background:#6366f1;color:#fff;border:0;border-radius:8px;margin:5px}
+pre{background:#f3f4f6;padding:15px;border-radius:8px;white-space:pre-wrap;font-size:13px}
+.ok{color:green;font-weight:bold}.err{color:red;font-weight:bold}</style>
+</head>
+<body>
+<h1>🔍 Test Chat — Diagnostic</h1>
+
+<h3>1. Test fetch login (same-origin)</h3>
+<button onclick="testLogin()">🔐 Test Login Andrei</button>
+
+<h3>2. Test fetch me (fără login)</h3>
+<button onclick="testMe()">👤 Test /me</button>
+
+<h3>3. Test ping server</h3>
+<button onclick="testPing()">🌐 Test Ping</button>
+
+<h3>4. Test browser info</h3>
+<button onclick="showInfo()">📋 Info</button>
+
+<pre id="out">Aștept...</pre>
+
+<script>
+const out=document.getElementById('out');
+function show(msg,cls=''){out.innerHTML='<span class="'+cls+'">'+msg+'</span>';}
+function append(msg,cls=''){out.innerHTML+='\n<span class="'+cls+'">'+msg+'</span>';}
+
+async function testLogin(){
+  show('Se testează...');
+  try{
+    const t0=Date.now();
+    const r=await fetch('api.php?a=login',{
+      method:'POST',
+      headers:{'X-Requested-With':'fetch','Content-Type':'application/json'},
+      body:JSON.stringify({username:'Andrei',password:'linux!23'}),
+      credentials:'include'
+    });
+    const dt=Date.now()-t0;
+    const t=await r.text();
+    show('⏱️ '+dt+'ms\nSTATUS: '+r.status+'\nRESPONSE:\n'+t, r.ok?'ok':'err');
+  }catch(e){
+    show('❌ FETCH ERROR:\n'+e.name+': '+e.message+'\n\nStack:\n'+(e.stack||'N/A'),'err');
+  }
+}
+
+async function testMe(){
+  show('Se testează...');
+  try{
+    const r=await fetch('api.php?a=me',{credentials:'include'});
+    const t=await r.text();
+    show('STATUS: '+r.status+'\nRESPONSE:\n'+t);
+  }catch(e){
+    show('❌ '+e.name+': '+e.message,'err');
+  }
+}
+
+async function testPing(){
+  show('Se testează...');
+  try{
+    const t0=Date.now();
+    const r=await fetch('test.html?t='+Date.now(),{cache:'no-store'});
+    const dt=Date.now()-t0;
+    show('✅ Fetch intern OK — '+dt+'ms\nSTATUS: '+r.status);
+  }catch(e){
+    show('❌ '+e.name+': '+e.message,'err');
+  }
+}
+
+function showInfo(){
+  show(
+    'URL: '+location.href+'\n'+
+    'Origin: '+location.origin+'\n'+
+    'Protocol: '+location.protocol+'\n'+
+    'UserAgent: '+navigator.userAgent+'\n'+
+    'Online: '+navigator.onLine+'\n'+
+    'Cookies enabled: '+navigator.cookieEnabled
+  );
+}
+</script>
+</body>
+</html>
