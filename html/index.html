@@ -1223,22 +1223,7 @@ async function tick(){
         a.href=x.file_url;a.target='_blank';a.download=x.file_name||'file';
         a.textContent='📎 '+(x.file_name||'Fișier');d.append(a);
       } else {
-        const txt = x.body || '';
-        if(txt.includes('@')){
-          const parts = txt.split(/(@[A-Za-z0-9_]+)/g);
-          parts.forEach(p=>{
-            if(/^@[A-Za-z0-9_]+$/.test(p)){
-              const sp = document.createElement('span');
-              sp.textContent = p;
-              sp.style.cssText = 'color:'+(mine?'#fff':'var(--primary)')+';font-weight:700;background:rgba(14,227,255,.15);padding:1px 5px;border-radius:4px';
-              d.append(sp);
-            } else {
-              d.append(document.createTextNode(p));
-            }
-          });
-        } else {
-          d.append(document.createTextNode(txt));
-        }
+        d.append(renderTextWithLinks(x.body || '', mine));
       }
       const meta=document.createElement('div');meta.className='meta';
       const t=document.createElement('span');t.textContent=fmtTime(x.created_at);meta.append(t);
@@ -2225,6 +2210,59 @@ function updateInputVisibility(){
     f.style.display = 'none';
     if(scrollBtn) scrollBtn.classList.remove('on');
   }
+}
+
+
+// ========== RENDER TEXT CU LINK-URI + MENTION ==========
+function renderTextWithLinks(txt, mine){
+  const frag = document.createDocumentFragment();
+  if(!txt) return frag;
+
+  // Regex: URL (http/https/www) sau @mention
+  // URL: http(s)://... sau www.xxx.yyy
+  // Mention: @username
+  const regex = /(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+|@[A-Za-z0-9_]+)/g;
+  const parts = txt.split(regex);
+
+  parts.forEach(p=>{
+    if(!p) return;
+
+    // URL http(s)://...
+    if(/^https?:\/\//i.test(p)){
+      const a = document.createElement('a');
+      a.href = p;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = p;
+      a.style.cssText = 'color:'+(mine?'#fff':'#0fe3ff')+';text-decoration:underline;word-break:break-all;font-weight:500';
+      a.onclick = function(e){ e.stopPropagation(); };
+      frag.appendChild(a);
+    }
+    // URL www.xxx
+    else if(/^www\./i.test(p)){
+      const a = document.createElement('a');
+      a.href = 'http://' + p;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = p;
+      a.style.cssText = 'color:'+(mine?'#fff':'#0fe3ff')+';text-decoration:underline;word-break:break-all;font-weight:500';
+      a.onclick = function(e){ e.stopPropagation(); };
+      frag.appendChild(a);
+    }
+    // @mention
+    else if(/^@[A-Za-z0-9_]+$/.test(p)){
+      const sp = document.createElement('span');
+      sp.textContent = p;
+      sp.style.cssText = 'color:'+(mine?'#fff':'var(--primary)')+';font-weight:700;background:rgba(14,227,255,.15);padding:1px 5px;border-radius:4px';
+      frag.appendChild(sp);
+    }
+    // Text normal
+    else {
+      frag.appendChild(document.createTextNode(p));
+    }
+  });
+
+  return frag;
 }
 
 // ========== INIT ==========
