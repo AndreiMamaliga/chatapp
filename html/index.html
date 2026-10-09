@@ -775,20 +775,10 @@ dialog h3{
 
 
 /* SELF-CHAT + VIEW-ONCE COMPACT */
-.view-once-msg{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 16px !important;
-  background:linear-gradient(135deg,rgba(248,69,255,.18),rgba(14,227,255,.1)) !important;
-  border:1px dashed var(--secondary) !important;
-  cursor:pointer;max-width:220px !important;
-  transition:all .2s;
-}
+
 .view-once-msg:hover{transform:scale(1.02);box-shadow:0 0 20px rgba(248,69,255,.3)}
 .view-once-msg .vo-lbl{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
-.view-once-viewed{
-  opacity:.5;font-style:italic;font-size:12px !important;
-  padding:6px 14px !important;
-}
+
 .vo-modal{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);animation:fadeIn .2s}
 .vo-modal-content{background:var(--dark);border:1px solid var(--secondary);border-radius:20px;padding:34px;max-width:min(520px,90vw);box-shadow:0 0 80px rgba(248,69,255,.5);position:relative;text-align:center;animation:pop .3s}
 .vo-modal-timer{position:absolute;top:-18px;right:-18px;background:linear-gradient(135deg,var(--secondary),var(--primary));color:var(--dark);width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;box-shadow:0 0 30px rgba(248,69,255,.7)}
@@ -852,6 +842,42 @@ dialog h3{
 #emojis .emoji-grid::-webkit-scrollbar{width:6px}
 #emojis .emoji-grid::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--primary),var(--secondary));border-radius:3px}
 #emojis .emoji-grid::-webkit-scrollbar-track{background:transparent}
+/* VIEW-ONCE COMPACT */
+.m.view-once-msg{
+  display:inline-flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  padding:12px 18px !important;
+  background:linear-gradient(135deg,rgba(248,69,255,.22),rgba(14,227,255,.12)) !important;
+  border:1px dashed #f845ff !important;
+  border-radius:14px !important;
+  cursor:pointer !important;
+  max-width:max-content !important;
+  min-width:auto !important;
+  width:auto !important;
+  transition:all .2s !important;
+  color:#fff !important;
+  box-shadow:0 0 18px rgba(248,69,255,.25) !important;
+  white-space:nowrap !important;
+}
+.m.view-once-msg:hover{
+  transform:translateY(-1px) scale(1.02) !important;
+  box-shadow:0 0 28px rgba(248,69,255,.45) !important;
+  border-style:solid !important;
+}
+.m.view-once-msg .vo-lbl{color:#fff;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700}
+.m.view-once-viewed{
+  opacity:.55 !important;
+  font-style:italic !important;
+  font-size:12px !important;
+  padding:8px 14px !important;
+  background:rgba(255,255,255,.05) !important;
+  border:1px solid rgba(255,255,255,.1) !important;
+  max-width:max-content !important;
+  width:auto !important;
+  color:var(--text-dim) !important;
+  white-space:nowrap !important;
+}
 </style>
 </head>
 <body>
@@ -1176,15 +1202,16 @@ async function tick(){
         setTimeout(function(){renderPollCard(pc,+x.id)},10);
       }
       else if(x.view_once==1 && !mine){
-        const vo=document.createElement('div');vo.className='view-once-box';
-        vo.innerHTML='<div class="vo-icon">👁️</div><div class="vo-label">Mesaj efemer</div><button type="button" class="vo-open">Deschide</button>';
-        vo.querySelector('.vo-open').onclick=async function(){
-          try{
-            await api('view_once_read',{id:+x.id});
-            vo.innerHTML='<div class="vo-read">✓ Citit - continut sters</div>';
-          }catch(e){toast(e,'err')}
-        };
-        d.append(vo);
+        if(!x.body || x.body==='' || x.body==null){
+          d.style.cssText = 'display:inline-block !important;padding:8px 16px !important;background:rgba(255,255,255,.05) !important;border:1px solid rgba(255,255,255,.15) !important;border-radius:14px !important;font-style:italic !important;font-size:12px !important;opacity:.6 !important;color:#9395bd !important;max-width:max-content !important;width:auto !important;white-space:nowrap !important';
+          d.textContent = '👁️ Mesaj efemer citit';
+        } else {
+          d.style.cssText = 'display:inline-flex !important;align-items:center !important;gap:10px !important;padding:12px 18px !important;background:linear-gradient(135deg,rgba(248,69,255,.25),rgba(14,227,255,.15)) !important;border:1px dashed #f845ff !important;border-radius:14px !important;cursor:pointer !important;max-width:max-content !important;width:auto !important;white-space:nowrap !important;color:#fff !important;box-shadow:0 0 18px rgba(248,69,255,.3) !important;transition:all .2s !important';
+          d.innerHTML = '<span style="font-size:22px;line-height:1">👁️</span><span style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700">Tap pentru a deschide</span>';
+          d.onmouseenter = function(){ d.style.boxShadow = '0 0 28px rgba(248,69,255,.5)'; d.style.transform = 'translateY(-1px) scale(1.02)'; };
+          d.onmouseleave = function(){ d.style.boxShadow = '0 0 18px rgba(248,69,255,.3)'; d.style.transform = ''; };
+          d.onclick = function(ev){ ev.stopPropagation(); openVOModal(x); };
+        }
       }
       else if(x.type==='image'&&x.file_url){
         const img=document.createElement('img');img.src=x.file_url;img.loading='lazy';
@@ -2009,15 +2036,49 @@ function bindPollButtons(){
   const pb=document.getElementById('pollBtn');
   if(pb)pb.onclick=openPollModal;
   const vb=document.getElementById('voBtn');
-  if(vb)vb.onclick=async function(){
+  if(vb)vb.onclick=function(){
     if(!room){toast('Deschide o conversație','warn');return}
-    const txt=prompt('Mesaj care se va șterge după citire:');
-    if(!txt)return;
-    try{
-      await api('send',{room_id:room.id,body:txt,view_once:1});
-      reloadMsgs();
-      toast('👁️ Mesaj efemer trimis','ok');
-    }catch(e){toast(e,'err')}
+
+    // Șterge modal vechi dacă există
+    const oldM = document.getElementById('voSendModal');
+    if(oldM) oldM.remove();
+
+    const m = document.createElement('dialog');
+    m.id = 'voSendModal';
+    m.style.cssText = 'border:1px solid #f845ff;border-radius:18px;padding:24px;width:min(480px,calc(100vw - 40px));background:var(--dark);color:var(--text);position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;box-shadow:0 0 60px rgba(248,69,255,.4);z-index:2000';
+    m.innerHTML =
+      '<h3 style="margin:0 0 6px;font-size:16px;text-transform:uppercase;letter-spacing:1.5px;background:linear-gradient(90deg,#0fe3ff,#f845ff);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700">👁️ Mesaj efemer</h3>'
+      + '<div style="font-size:12px;color:var(--text-dim);margin-bottom:14px">Se șterge automat după ce destinatarul îl citește o singură dată.</div>'
+      + '<textarea id="voText" placeholder="Scrie mesajul..." maxlength="2000" rows="4" style="width:100%;padding:12px 14px;background:rgba(255,255,255,.05);border:1px solid #f845ff;border-radius:10px;color:var(--text);font:inherit;font-size:14px;resize:vertical;outline:none;box-sizing:border-box"></textarea>'
+      + '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">'
+      + '<button type="button" id="voCancel" style="padding:10px 20px;background:transparent;color:var(--text-dim);border:0;cursor:pointer;font-size:13px;border-radius:8px">Anulează</button>'
+      + '<button type="button" id="voSend" style="padding:10px 24px;background:linear-gradient(135deg,#f845ff,#0fe3ff);color:#0d0e19;border:0;border-radius:10px;font-weight:800;cursor:pointer;font-size:12px;letter-spacing:1.5px;text-transform:uppercase">👁️ Trimite</button>'
+      + '</div>';
+    document.body.appendChild(m);
+    m.showModal();
+
+    setTimeout(function(){ document.getElementById('voText').focus(); }, 100);
+
+    document.getElementById('voCancel').onclick = function(){ m.close(); m.remove(); };
+
+    document.getElementById('voSend').onclick = async function(){
+      const txt = document.getElementById('voText').value.trim();
+      if(!txt){ toast('Scrie un mesaj','warn'); return; }
+      try{
+        await api('send', {room_id: room.id, body: txt, view_once: 1});
+        m.close(); m.remove();
+        reloadMsgs();
+        toast('👁️ Mesaj efemer trimis','ok');
+      }catch(e){ toast(e,'err'); }
+    };
+
+    document.getElementById('voText').onkeydown = function(e){
+      if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+        e.preventDefault();
+        document.getElementById('voSend').click();
+      }
+      if(e.key === 'Escape'){ m.close(); m.remove(); }
+    };
   };
 }
 bindPollButtons();

@@ -1,13 +1,23 @@
 server {
     listen 80;
+    server_name _;
     root /usr/share/nginx/html;
     index index.html;
-    location / { try_files $uri $uri/ =404; }
+    client_max_body_size 20M;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
     location ~ \.php$ {
-        resolver 127.0.0.11 valid=30s;
-        set $upstream php:9000;
-        fastcgi_pass $upstream;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
+        fastcgi_pass php:9000;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_read_timeout 60;
+    }
+
+    location /uploads/ {
+        alias /usr/share/nginx/html/uploads/;
+        autoindex off;
     }
 }
