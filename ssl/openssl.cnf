@@ -1,0 +1,16 @@
+[req]
+distinguished_name = req_distinguished_name
+x509_extensions = v3_req
+prompt = no
+[req_distinguished_name]
+CN = 10.130.70.55
+O = NeonChat
+OU = Internal
+[v3_req]
+subjectAltName = @alt_names
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+[alt_names]
+IP.1 = 10.130.70.55
+IP.2 = 127.0.0.1
+DNS.1 = localhost
