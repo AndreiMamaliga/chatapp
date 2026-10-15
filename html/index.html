@@ -1411,6 +1411,66 @@ body:not(.nc-logged){padding-top:0!important}
   body.nc-logged{padding-top:60px!important}
 }
 
+
+#register{
+  display:none;
+  max-width:400px;
+  padding:40px 36px;
+  gap:14px;
+  text-align:center;
+  background:var(--theme-bg-color);
+  border:1px solid var(--border-color);
+  border-radius:24px;
+  box-shadow:0 24px 60px rgba(0,0,0,.15);
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  z-index:10;
+  width:calc(100vw - 40px);
+  flex-direction:column;
+}
+#register.on{display:flex}
+#register .logo{font-size:64px;line-height:1;margin-bottom:4px}
+#register h1{
+  font-size:26px;font-weight:800;
+  background:linear-gradient(90deg,#0086ff,#f845ff);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:8px;
+}
+#register input{
+  width:100%;padding:13px 16px;
+  background:var(--input-bg);
+  border:1px solid var(--border-color);
+  border-radius:12px;
+  color:var(--body-color);
+  font-family:var(--body-font);
+  font-size:15px;
+  outline:none;
+  transition:border .15s,box-shadow .15s;
+  box-sizing:border-box;
+}
+#register input:focus{
+  border-color:var(--theme-color);
+  box-shadow:0 0 0 3px rgba(0,134,255,.12);
+}
+#register .btn{
+  width:100%;padding:13px;
+  background:var(--theme-color);
+  color:#fff;border:0;border-radius:12px;
+  font-weight:700;font-size:15px;cursor:pointer;
+  transition:filter .15s,transform .1s;
+}
+#register .btn:hover{filter:brightness(1.08)}
+#register .btn:active{transform:scale(.98)}
+#register .ghost{
+  background:none;border:0;color:var(--msg-message);
+  cursor:pointer;font-size:14px;padding:8px;
+  border-radius:10px;
+}
+#register .ghost:hover{background:var(--msg-hover-bg);color:var(--body-color)}
+#register small{min-height:18px;font-size:13px;color:#ff4266}
+#register .hint{font-size:12px;color:var(--msg-message);margin-top:-6px;text-align:left}
+
 </style>
 </head>
 <body>
@@ -1424,6 +1484,18 @@ body:not(.nc-logged){padding-top:0!important}
   <button class="ghost" id="reg">Nu ai cont? Creează unul</button>
   <small id="err"></small>
 </div>
+<div id="register">
+  <div class="logo">💬</div>
+  <h1>Creează cont</h1>
+  <input id="ru" type="text" placeholder="Username (3-20 litere/cifre/_)" autocapitalize="off" spellcheck="false">
+  <input id="re" type="email" placeholder="Email" autocapitalize="off" spellcheck="false">
+  <input id="rp" type="password" placeholder="Parolă (minim 6 caractere)" autocomplete="new-password">
+  <input id="rp2" type="password" placeholder="Confirmă parola" autocomplete="new-password">
+  <button class="btn" id="registerBtn">Creează cont</button>
+  <button class="ghost" id="backToLogin">← Înapoi la login</button>
+  <small id="regErr"></small>
+</div>
+
 
 <div class="nc-topbar">
   <div class="nc-logo">
@@ -3022,6 +3094,74 @@ function renderTextWithLinks(txt, mine){
   if(meEl){
     new MutationObserver(syncAvatar).observe(meEl,{childList:true,characterData:true,subtree:true});
   }
+})();
+
+
+// ========== REGISTER SCREEN TOGGLE ==========
+(function(){
+  const authEl = document.getElementById('auth');
+  const regEl = document.getElementById('register');
+  const regBtn = document.getElementById('reg');
+  const backBtn = document.getElementById('backToLogin');
+
+  if(!authEl || !regEl) return;
+
+  // Buton "Nu ai cont?" → arată register
+  if(regBtn){
+    regBtn.onclick = function(){
+      authEl.style.display = 'none';
+      regEl.classList.add('on');
+      setTimeout(function(){ document.getElementById('ru').focus(); }, 100);
+    };
+  }
+
+  // Buton "Înapoi" → arată login
+  if(backBtn){
+    backBtn.onclick = function(){
+      regEl.classList.remove('on');
+      authEl.style.display = 'grid';
+      document.getElementById('regErr').textContent = '';
+    };
+  }
+
+  // Buton "Creează cont"
+  const registerBtn = document.getElementById('registerBtn');
+  if(registerBtn){
+    registerBtn.onclick = async function(){
+      const u = document.getElementById('ru').value.trim();
+      const e = document.getElementById('re').value.trim();
+      const p = document.getElementById('rp').value;
+      const p2 = document.getElementById('rp2').value;
+      const err = document.getElementById('regErr');
+
+      err.textContent = '';
+
+      // Validări client-side
+      if(!u || !p){ err.textContent = 'Completează username și parolă'; return; }
+      if(u.length < 3 || u.length > 20){ err.textContent = 'Username 3-20 caractere'; return; }
+      if(!/^[A-Za-z0-9_]+$/.test(u)){ err.textContent = 'Doar litere, cifre, underscore'; return; }
+      if(p.length < 6){ err.textContent = 'Parolă minim 6 caractere'; return; }
+      if(p !== p2){ err.textContent = 'Parolele nu coincid'; return; }
+
+      // TODO: PASUL 2 — trimitere cod pe email
+      // Deocamdată facem register direct (fără verificare email)
+      try{
+        await api('register', {username: u, password: p, email: e});
+        err.style.color = '#23be7e';
+        err.textContent = '✅ Cont creat! Te logăm automat...';
+        setTimeout(function(){
+          regEl.classList.remove('on');
+          authEl.style.display = 'grid';
+          enter();
+        }, 800);
+      }catch(ex){
+        err.style.color = '#ff4266';
+        err.textContent = ex;
+      }
+    };
+  }
+
+  console.log('[REGISTER] UI activat');
 })();
 
 // ========== INIT ==========
