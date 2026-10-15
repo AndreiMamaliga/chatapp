@@ -1471,6 +1471,15 @@ body:not(.nc-logged){padding-top:0!important}
 #register small{min-height:18px;font-size:13px;color:#ff4266}
 #register .hint{font-size:12px;color:var(--msg-message);margin-top:-6px;text-align:left}
 
+
+.room .draft-badge{
+  display:inline-block;
+  color:#ff4266;
+  font-size:11px;
+  font-weight:700;
+  margin-right:4px;
+}
+
 </style>
 </head>
 <body>
@@ -1655,6 +1664,39 @@ body:not(.nc-logged){padding-top:0!important}
 <script>
 const $=s=>document.querySelector(s);
 let prevU=-1,ac,me,room,last=0,timer,mode,sel=new Set(),n=0,busy=false;
+
+// ========== DRAFT FUNCTIONS (hoisted) ==========
+function ncDraftGet(roomId){
+  if(!roomId) return '';
+  try{
+    var d = JSON.parse(localStorage.getItem('nc_drafts')||'{}');
+    var v = d[String(roomId)];
+    if(!v) return '';
+    // Suportă ambele formate: string sau {text, time}
+    if(typeof v === 'string') return v;
+    if(v && typeof v === 'object' && typeof v.text === 'string') return v.text;
+    return '';
+  }catch(e){ return ''; }
+}
+function ncDraftSave(roomId, text){
+  if(!roomId) return;
+  try{
+    var d = JSON.parse(localStorage.getItem('nc_drafts')||'{}');
+    if(text && text.trim()) d[String(roomId)] = text;
+    else delete d[String(roomId)];
+    localStorage.setItem('nc_drafts', JSON.stringify(d));
+    console.log('[DRAFT] Saved room', roomId, ':', text.slice(0, 30));
+  }catch(e){ console.error('[DRAFT] save', e); }
+}
+function ncDraftClear(roomId){
+  if(!roomId) return;
+  try{
+    var d = JSON.parse(localStorage.getItem('nc_drafts')||'{}');
+    delete d[String(roomId)];
+    localStorage.setItem('nc_drafts', JSON.stringify(d));
+  }catch(e){}
+}
+
 let replyTo=null,editing=null,mediaRec=null,recChunks=[],recTimer=null,lastDate='';
 let currentEmojiCat='smileys';
 
@@ -1741,7 +1783,21 @@ async function loadRooms(){
     const info=document.createElement('div');info.className='info';
     const b=document.createElement('b');b.textContent = (r.is_self==1 ? '📝 ' : '') + (r.name || '?');
     const s=document.createElement('small');
-    s.textContent=r.lastmsg||'Fără mesaje';
+    // Verifică dacă există draft pentru această cameră
+    var _draft = '';
+    try{
+      if(typeof ncDraftGet === 'function'){
+        _draft = ncDraftGet(r.id) || '';
+      }
+    }catch(e){}
+    if(_draft && _draft.trim()){
+      s.textContent = 'Draft: ' + _draft.slice(0, 40);
+      s.style.color = '#ff4266';
+      s.style.fontWeight = '600';
+    } else {
+      s.textContent = r.lastmsg || 'Fără mesaje';
+    }
+    info.append(b,s);
     info.append(b,s);
     const meta=document.createElement('div');meta.className='meta';
     if(r.lasttime){const t=document.createElement('span');t.className='time';t.textContent=fmtTime(r.lasttime);meta.append(t)}
@@ -1758,6 +1814,13 @@ async function loadRooms(){
 $('#sq').oninput=loadRooms;
 
 async function openRoom(r){
+  // Save old draft, apoi switch
+  try{
+    if(typeof ncDraftSave === 'function' && typeof room !== 'undefined' && room && room.id && room.id != r.id){
+      var _taOld = document.getElementById('t');
+      if(_taOld && _taOld.value.trim()) ncDraftSave(room.id, _taOld.value);
+    }
+  }catch(e){}
   room=r;last=0;replyTo=null;editing=null;lastDate='';
   const tAvEl=document.getElementById('tAv');
   if(tAvEl){
@@ -1780,7 +1843,22 @@ async function openRoom(r){
   $('#rbar').classList.remove('on');
   updateInputVisibility();
   setTimeout(()=>$('#t').focus(),100);
-  tick();loadRooms();loadRoomMembers();
+  tick();loadRooms();
+  // Clear + restore draft pentru camera nouă
+  setTimeout(function(){
+    try{
+      var _ta = document.getElementById('t');
+      if(!_ta) return;
+      _ta.value = '';
+      _ta.style.height = 'auto';
+      var _d = ncDraftGet(r.id);
+      if(_d){
+        _ta.value = _d;
+        _ta.dispatchEvent(new Event('input', {bubbles:true}));
+        console.log('[DRAFT] Restored room', r.id, ':', _d.slice(0, 30));
+      }
+    }catch(e){ console.error('[DRAFT] restore', e); }
+  }, 150);loadRoomMembers();
 }
 
 // ========== MESSAGES ==========
@@ -3164,6 +3242,7 @@ function renderTextWithLinks(txt, mine){
   console.log('[REGISTER] UI activat');
 })();
 
+
 // ========== INIT ==========
 (function(){
   var btn = document.getElementById('changePassBtn');
@@ -3322,6 +3401,92 @@ function renderTextWithLinks(txt, mine){
     console.error('[WORKER] Init failed:', e);
   }
 })();
+
+
+// ========== DRAFT LISTENERS ==========
+(function(){
+  function attachAll(){
+    var ta = document.getElementById('t');
+    if(ta && !ta._draftAttached){
+      ta._draftAttached = true;
+      var timer = null;
+      ta.addEventListener('input', function(){
+        if(typeof room === 'undefined' || !room || !room.id) return;
+        if(timer) clearTimeout(timer);
+        timer = setTimeout(function(){
+          if(room && room.id){
+            ncDraftSave(room.id, ta.value);
+            // Update sidebar live (fără a reîncărca totul)
+            try{ if(typeof updateSidebarDrafts === 'function') updateSidebarDrafts(); }catch(e){}
+          }
+        }, 300);
+      });
+      console.log('[DRAFT] Input listener OK');
+    }
+    var form = document.getElementById('f');
+    if(form && !form._draftAttached){
+      form._draftAttached = true;
+      form.addEventListener('submit', function(){
+        if(room && room.id) ncDraftClear(room.id);
+      }, true);
+      console.log('[DRAFT] Submit listener OK');
+    }
+  }
+  setTimeout(attachAll, 500);
+  setTimeout(attachAll, 1500);
+  setTimeout(attachAll, 3000);
+})();
+
+
+// Curăță datele vechi corupte (format {text, time})
+(function(){
+  try{
+    var raw = localStorage.getItem('nc_drafts');
+    if(!raw) return;
+    var d = JSON.parse(raw);
+    var cleaned = {};
+    var fixed = false;
+    Object.keys(d).forEach(function(k){
+      var v = d[k];
+      if(typeof v === 'string'){
+        cleaned[k] = v;
+      } else if(v && typeof v === 'object' && typeof v.text === 'string'){
+        cleaned[k] = v.text;
+        fixed = true;
+      }
+    });
+    if(fixed){
+      localStorage.setItem('nc_drafts', JSON.stringify(cleaned));
+      console.log('[DRAFT] LocalStorage curățat de obiecte vechi');
+    }
+  }catch(e){ console.error('[DRAFT] cleanup', e); }
+})();
+
+
+// Actualizează drafturile în sidebar (fără re-render complet)
+function updateSidebarDrafts(){
+  try{
+    if(typeof ncDraftGet !== 'function') return;
+    var rooms = document.querySelectorAll('#rooms .room');
+    rooms.forEach(function(roomEl, i){
+      var cached = (window._lastRoomsCache || []);
+      var r = cached[i];
+      if(!r) return;
+      var small = roomEl.querySelector('small');
+      if(!small) return;
+      var draft = ncDraftGet(r.id) || '';
+      if(draft && draft.trim()){
+        small.textContent = 'Draft: ' + draft.slice(0, 40);
+        small.style.color = '#ff4266';
+        small.style.fontWeight = '600';
+      } else {
+        small.textContent = r.lastmsg || 'Fără mesaje';
+        small.style.color = '';
+        small.style.fontWeight = '';
+      }
+    });
+  }catch(e){ console.error('[DRAFT] updateSidebar', e); }
+}
 
 enter().catch(auth);
 </script>
