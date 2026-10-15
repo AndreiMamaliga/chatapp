@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>Test Notificări</title>
+<style>
+body{font-family:system-ui;background:#1d1d1d;color:#fff;padding:40px;max-width:700px;margin:auto}
+h1{color:#0086ff}
+.box{background:#27292d;border:1px solid #323336;border-radius:12px;padding:20px;margin:15px 0}
+.ok{color:#23be7e;font-weight:700}
+.err{color:#ff4266;font-weight:700}
+.warn{color:#ffce45;font-weight:700}
+button{background:#0086ff;color:#fff;border:0;padding:14px 28px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;margin:5px}
+button:hover{background:#0086dd}
+pre{background:#0d0d0d;padding:15px;border-radius:8px;overflow:auto;font-size:14px}
+</style>
+</head>
+<body>
+<h1>🔔 Test Notificări Desktop</h1>
+
+<div class="box">
+  <h3>1. Verificare suport</h3>
+  <div id="checks">Se verifică...</div>
+</div>
+
+<div class="box">
+  <h3>2. Cere permisiune</h3>
+  <p>Apasă butonul și acceptă în browser:</p>
+  <button onclick="askPerm()">🔔 Cere permisiune</button>
+  <div id="permResult" style="margin-top:15px"></div>
+</div>
+
+<div class="box">
+  <h3>3. Trimite notificare test</h3>
+  <p>Apasă butonul — ar trebui să apară notificare în colțul Windows-ului:</p>
+  <button onclick="sendTest()">📬 Trimite notificare</button>
+  <div id="testResult" style="margin-top:15px"></div>
+</div>
+
+<div class="box">
+  <h3>4. Info tehnic</h3>
+  <pre id="techInfo"></pre>
+</div>
+
+<script>
+function show(id, msg, cls){
+  document.getElementById(id).innerHTML = '<span class="'+cls+'">'+msg+'</span>';
+}
+
+// 1. Verificări
+(function checks(){
+  const out = [];
+  out.push(('Notification' in window)
+    ? '<span class="ok">✅ Notification API: EXISTĂ</span>'
+    : '<span class="err">❌ Notification API: LIPSĂ</span>');
+  out.push(window.isSecureContext
+    ? '<span class="ok">✅ isSecureContext: TRUE (HTTPS activ)</span>'
+    : '<span class="err">❌ isSecureContext: FALSE (nu e HTTPS?)</span>');
+  out.push(location.protocol === 'https:'
+    ? '<span class="ok">✅ Protocol: HTTPS</span>'
+    : '<span class="err">❌ Protocol: '+location.protocol+' (trebuie HTTPS!)</span>');
+
+  if('Notification' in window){
+    const p = Notification.permission;
+    const cls = p === 'granted' ? 'ok' : (p === 'denied' ? 'err' : 'warn');
+    out.push('<span class="'+cls+'">📌 Permisiune: '+p+'</span>');
+  }
+
+  document.getElementById('checks').innerHTML = out.join('<br>');
+
+  // Info tehnic
+  document.getElementById('techInfo').textContent =
+    'URL: ' + location.href + '\n' +
+    'Protocol: ' + location.protocol + '\n' +
+    'Secure context: ' + window.isSecureContext + '\n' +
+    'Notification in window: ' + ('Notification' in window) + '\n' +
+    'Notification.permission: ' + (('Notification' in window) ? Notification.permission : 'N/A') + '\n' +
+    'User Agent: ' + navigator.userAgent;
+})();
+
+// 2. Cerere permisiune
+async function askPerm(){
+  if(!('Notification' in window)){
+    show('permResult', '❌ Notification API nu există', 'err');
+    return;
+  }
+  try{
+    const r = await Notification.requestPermission();
+    if(r === 'granted'){
+      show('permResult', '✅ Permisiune ACORDATĂ!', 'ok');
+    } else if(r === 'denied'){
+      show('permResult', '❌ Permisiune RESPINSĂ. Verifică chrome://settings/content/notifications', 'err');
+    } else {
+      show('permResult', '⚠️ Permisiune: ' + r, 'warn');
+    }
+  }catch(e){
+    show('permResult', '❌ Eroare: ' + e.message, 'err');
+  }
+}
+
+// 3. Test notificare
+function sendTest(){
+  if(!('Notification' in window)){
+    show('testResult', '❌ API lipsă', 'err');
+    return;
+  }
+  if(Notification.permission !== 'granted'){
+    show('testResult', '⚠️ Nu ai dat permisiune. Apasă butonul 2 mai sus.', 'warn');
+    return;
+  }
+  try{
+    const n = new Notification('🔔 NeonChat Test', {
+      body: 'Aceasta e o notificare de test! Dacă o vezi, totul funcționează.',
+      icon: '/favicon.ico',
+      tag: 'test',
+      requireInteraction: false
+    });
+    n.onclick = function(){
+      window.focus();
+      show('testResult', '✅ Ai dat click pe notificare', 'ok');
+      n.close();
+    };
+    show('testResult', '✅ Notificare trimisă! Verifică colțul ecranului.', 'ok');
+    setTimeout(()=>{ try{n.close()}catch(e){} }, 8000);
+  }catch(e){
+    show('testResult', '❌ Eroare: ' + e.message, 'err');
+  }
+}
+</script>
+</body>
+</html>

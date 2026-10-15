@@ -1830,7 +1830,15 @@ async function tick(){
       }
       b.append(d);
     });
-    if(!init&&m.some(x=>x.user_id!=me.id))beep();
+    if(!init&&m.some(x=>x.user_id!=me.id)){
+        beep();
+        if(typeof ncNotify === 'function' && (document.hidden || !room || room.id != id)){
+          var lastMsg = m[m.length-1];
+          var sender = lastMsg.username || 'Cineva';
+          var preview = (lastMsg.body || 'Fișier').slice(0,100);
+          ncNotify(sender, preview, function(){ loadRooms(); });
+        }
+      }
     if(near||init)setTimeout(()=>b.scrollTop=b.scrollHeight,50);
   }catch(e){}finally{busy=false}
 }
@@ -3032,6 +3040,145 @@ function renderTextWithLinks(txt, mine){
     }catch(e){ toast(e, 'err'); }
   };
 })();
+// ========== NOTIFICĂRI DESKTOP v3 ==========
+(function(){
+  if(!('Notification' in window)){
+    console.log('[NOTIF] API lipsă');
+    return;
+  }
+  if(!window.isSecureContext){
+    console.log('[NOTIF] Nu e secure context');
+    return;
+  }
+
+  window.ncNotify = function(title, body, onclick){
+    try{
+      if(Notification.permission !== 'granted'){
+        console.log('[NOTIF] Permisiune lipsă:', Notification.permission);
+        return;
+      }
+      var n = new Notification(title, {
+        body: body,
+        tag: 'nc-msg-' + Date.now(),
+        icon: '/favicon.ico'
+      });
+      if(onclick){
+        n.onclick = function(e){
+          e.preventDefault();
+          window.focus();
+          onclick();
+          n.close();
+        };
+      }
+      setTimeout(function(){ try{ n.close(); }catch(e){} }, 6000);
+      console.log('[NOTIF] Trimis:', title);
+    }catch(e){
+      console.error('[NOTIF] Eroare:', e);
+    }
+  };
+
+  // Cerere permisiune la primul click
+  var asked = false;
+  document.addEventListener('click', function askNotif(){
+    if(asked) return;
+    asked = true;
+    if(Notification.permission === 'default'){
+      Notification.requestPermission().then(function(p){
+        console.log('[NOTIF] Permisiune nouă:', p);
+        if(p === 'granted'){
+          try{ toast('🔔 Notificări activate','ok',2000); }catch(e){}
+        }
+      }).catch(function(){});
+    }
+  }, {once: true});
+
+  console.log('[NOTIF] v3 activat, permisiune:', Notification.permission);
+})();
+
+// ========== NOTIFICĂRI DESKTOP v3 ==========
+(function(){
+  if(!('Notification' in window)){
+    console.log('[NOTIF] API lipsă');
+    return;
+  }
+  if(!window.isSecureContext){
+    console.log('[NOTIF] Nu e secure context');
+    return;
+  }
+
+  window.ncNotify = function(title, body, onclick){
+    try{
+      if(Notification.permission !== 'granted'){
+        console.log('[NOTIF] Permisiune lipsă:', Notification.permission);
+        return;
+      }
+      var n = new Notification(title, {
+        body: body,
+        tag: 'nc-msg-' + Date.now(),
+        icon: '/favicon.ico'
+      });
+      if(onclick){
+        n.onclick = function(e){
+          e.preventDefault();
+          window.focus();
+          onclick();
+          n.close();
+        };
+      }
+      setTimeout(function(){ try{ n.close(); }catch(e){} }, 6000);
+      console.log('[NOTIF] Trimis:', title);
+    }catch(e){
+      console.error('[NOTIF] Eroare:', e);
+    }
+  };
+
+  // Cerere permisiune la primul click
+  var asked = false;
+  document.addEventListener('click', function askNotif(){
+    if(asked) return;
+    asked = true;
+    if(Notification.permission === 'default'){
+      Notification.requestPermission().then(function(p){
+        console.log('[NOTIF] Permisiune nouă:', p);
+        if(p === 'granted'){
+          try{ toast('🔔 Notificări activate','ok',2000); }catch(e){}
+        }
+      }).catch(function(){});
+    }
+  }, {once: true});
+
+  console.log('[NOTIF] v3 activat, permisiune:', Notification.permission);
+})();
+
+// ========== BACKGROUND WORKER v2 (fișier separat) ==========
+(function(){
+  try{
+    if(!('Worker' in window)){ console.log('[WORKER] Nu suportat'); return; }
+    if(!('Notification' in window)){ console.log('[WORKER] Fără Notification API'); return; }
+    if(!window.isSecureContext){ console.log('[WORKER] Nu e secure'); return; }
+    if(Notification.permission !== 'granted'){ console.log('[WORKER] Fără permisiune'); return; }
+
+    var nw = new Worker('notif-worker.js');
+    nw.onmessage = function(e){
+      if(!e.data || e.data.type !== 'notify') return;
+      try{
+        var n = new Notification('💬 NeonChat', {
+          body: e.data.diff === 1 ? 'Ai un mesaj nou' : 'Ai ' + e.data.diff + ' mesaje noi',
+          tag: 'nc-bg-' + Date.now(),
+          icon: '/favicon.ico'
+        });
+        n.onclick = function(){ window.focus(); n.close(); };
+        setTimeout(function(){ try{ n.close(); }catch(err){} }, 8000);
+        console.log('[WORKER] Notificare trimisă:', e.data.diff);
+      }catch(err){ console.error('[WORKER] Notif error:', err); }
+    };
+    nw.onerror = function(e){ console.error('[WORKER] Error:', e.message || e); };
+    console.log('[WORKER] Activ - notificări în fundal OK');
+  }catch(e){
+    console.error('[WORKER] Init failed:', e);
+  }
+})();
+
 enter().catch(auth);
 </script>
 
@@ -3057,6 +3204,7 @@ enter().catch(auth);
     </div>
   </div>
 </dialog>
+
 
 </body>
 </html>
