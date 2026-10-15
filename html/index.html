@@ -1480,7 +1480,81 @@ body:not(.nc-logged){padding-top:0!important}
   margin-right:4px;
 }
 
+
+.nc-install-btn{
+  display:inline-flex !important;
+  align-items:center;
+  gap:6px;
+  padding:8px 14px;
+  background:linear-gradient(135deg,#0086ff,#f845ff);
+  color:#fff;
+  border:0;
+  border-radius:20px;
+  font-family:var(--body-font);
+  font-weight:600;
+  font-size:13px;
+  cursor:pointer;
+  transition:all .2s;
+  white-space:nowrap;
+  box-shadow:0 2px 10px rgba(0,134,255,.3);
+}
+.nc-install-btn.show{display:inline-flex}
+.nc-install-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,134,255,.5)}
+.nc-install-btn:active{transform:scale(.97)}
+.nc-install-btn svg{width:16px;height:16px;flex-shrink:0}
+
+@media(max-width:780px){
+  .nc-install-btn span{display:none}
+  .nc-install-btn{padding:8px}
+}
+
+
+/* PWA safe area + ascunde butonul instalat */
+@media (display-mode: standalone){
+  .nc-install-btn{display:none !important}
+  .nc-topbar{padding-top:env(safe-area-inset-top)!important}
+}
+body.pwa-installed .nc-install-btn{display:none !important}
+body.pwa-running .nc-install-btn{display:none !important}
+
+
+/* Ascunde butonul în PWA instalat (orice mod) */
+@media (display-mode: standalone),
+       (display-mode: window-controls-overlay),
+       (display-mode: fullscreen),
+       (display-mode: minimal-ui){
+  #ncInstall, .nc-install-btn{
+    display:none !important;
+    visibility:hidden !important;
+    opacity:0 !important;
+    pointer-events:none !important;
+    width:0 !important;
+    padding:0 !important;
+    margin:0 !important;
+  }
+}
+
+/* Dacă flag în localStorage */
+html[data-pwa="1"] #ncInstall,
+html[data-pwa="1"] .nc-install-btn{
+  display:none !important;
+}
+
+/* Topbar padding pentru zona de window controls */
+@media (display-mode: window-controls-overlay){
+  .nc-topbar{
+    padding-top:env(titlebar-area-height, 0) !important;
+  }
+}
+
 </style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0086ff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NeonChat">
+<link rel="apple-touch-icon" href="/icon-192.png">
 </head>
 <body>
 
@@ -1515,6 +1589,12 @@ body:not(.nc-logged){padding-top:0!important}
     <input type="text" id="ncSearch" placeholder="Caută conversații...">
   </div>
   <div class="nc-user">
+    <button class="nc-install-btn" id="ncInstall" title="Instalează aplicația">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+      </svg>
+      <span>Instalează</span>
+    </button>
     <button class="nc-icon-btn" id="ncSelf" title="Mesaje salvate">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
     </button>
@@ -3488,7 +3568,148 @@ function updateSidebarDrafts(){
   }catch(e){ console.error('[DRAFT] updateSidebar', e); }
 }
 
+
+// ========== PWA INSTALL BUTTON ==========
+(function(){
+  var deferredPrompt = null;
+  var installBtn = document.getElementById('ncInstall');
+
+  if(!installBtn){
+    console.warn('[PWA] Buton install lipsește din DOM');
+    return;
+  }
+
+  // Arată butonul MEREU (fallback pentru certificat self-signed)
+  installBtn.classList.add('show');
+
+  // Chrome fires beforeinstallprompt când PWA e installabilă
+  window.addEventListener('beforeinstallprompt', function(e){
+    console.log('[PWA] beforeinstallprompt fired');
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.classList.add('show');
+  });
+
+  // Click pe buton → afișează prompt-ul
+  installBtn.addEventListener('click', async function(){
+    console.log('[PWA] Buton apăsat, deferredPrompt:', !!deferredPrompt);
+
+    if(!deferredPrompt){
+      // Fallback: instructaj manual
+      var msg = 'INSTALARE NeonChat\n' +
+        '═══════════════════════\n\n' +
+        '🖥️ PE DESKTOP (Chrome/Edge):\n' +
+        '1. Click pe ⋮ (3 puncte dreapta sus)\n' +
+        '2. „Save and share" → „Install page as app"\n' +
+        '   SAU click pe iconița ⊕ din bara de adrese\n\n' +
+        '⚠️ Dacă opțiunea nu apare:\n' +
+        'Certificatul SSL self-signed blochează instalarea.\n' +
+        'Soluție: instalează certificatul ca Trusted Root.\n\n' +
+        '📱 PE TELEFON:\n' +
+        'Chrome → ⋮ → „Add to Home screen"\n' +
+        '(doar pe HTTPS, fără avertismente de certificat)';
+      alert(msg);
+      return;
+    }
+
+    // Afișează prompt-ul nativ Chrome
+    deferredPrompt.prompt();
+    var choice = await deferredPrompt.userChoice;
+    console.log('[PWA] User choice:', choice.outcome);
+
+    if(choice.outcome === 'accepted'){
+      installBtn.classList.remove('show');
+      try{ if(typeof toast === 'function') toast('✅ NeonChat instalat!','ok',2500); }catch(e){}
+    }
+
+    deferredPrompt = null;
+  });
+
+  // Dacă deja e instalată, ascunde butonul
+  window.addEventListener('appinstalled', function(){
+    console.log('[PWA] App installed');
+    installBtn.classList.remove('show');
+    try{ if(typeof toast === 'function') toast('🎉 Aplicația a fost instalată!','ok',3000); }catch(e){}
+  });
+
+  // Detectează dacă rulează deja ca PWA instalată
+  if(window.matchMedia('(display-mode: standalone)').matches){
+    console.log('[PWA] Rulează în mod standalone');
+    installBtn.classList.remove('show');
+  }
+
+  console.log('[PWA] Install button handler activat');
+})();
+
+
+// ========== PWA INSTALL STATE ==========
+(function(){
+  // Dacă rulează deja ca PWA, ascunde butonul
+  if(window.matchMedia('(display-mode: standalone)').matches){
+    document.body.classList.add('pwa-running');
+    console.log('[PWA] Rulează ca PWA instalată');
+  }
+
+  // Dacă a fost instalat anterior, ascunde butonul
+  if(localStorage.getItem('nc_pwa_installed') === '1'){
+    document.body.classList.add('pwa-installed');
+  }
+
+  // Marchează după instalare
+  window.addEventListener('appinstalled', function(){
+    localStorage.setItem('nc_pwa_installed', '1');
+    document.body.classList.add('pwa-installed');
+    var btn = document.getElementById('ncInstall');
+    if(btn) btn.style.display = 'none';
+    console.log('[PWA] Instalat — buton ascuns');
+  });
+
+  // Ascultă și schimbarea display-mode
+  if(window.matchMedia){
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', function(e){
+      if(e.matches){
+        document.body.classList.add('pwa-running');
+        var btn = document.getElementById('ncInstall');
+        if(btn) btn.style.display = 'none';
+      }
+    });
+  }
+})();
+
+
+// ========== PWA DETECTION STRONG ==========
+(function(){
+  function isPWA(){
+    if(window.matchMedia('(display-mode: standalone)').matches) return true;
+    if(window.matchMedia('(display-mode: window-controls-overlay)').matches) return true;
+    if(window.matchMedia('(display-mode: fullscreen)').matches) return true;
+    if(window.matchMedia('(display-mode: minimal-ui)').matches) return true;
+    if(window.navigator.standalone === true) return true; // iOS
+    return false;
+  }
+
+  if(isPWA()){
+    console.log('[PWA] Detectat ca PWA instalată → ascund buton');
+    document.documentElement.setAttribute('data-pwa', '1');
+    document.body.classList.add('pwa-running');
+    var btn = document.getElementById('ncInstall');
+    if(btn){ btn.style.display = 'none'; btn.remove(); }
+  } else {
+    console.log('[PWA] Rulează în browser normal');
+  }
+})();
+
 enter().catch(auth);
+
+// ========== SERVICE WORKER (PWA) ==========
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('/sw.js')
+      .then(function(reg){ console.log('[PWA] Service Worker înregistrat:', reg.scope); })
+      .catch(function(err){ console.warn('[PWA] SW registration failed:', err); });
+  });
+}
+
 </script>
 
 <dialog id="userProfileDlg">
