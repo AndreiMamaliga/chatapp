@@ -1835,8 +1835,12 @@ async function tick(){
         if(typeof ncNotify === 'function' && (document.hidden || !room || room.id != id)){
           var lastMsg = m[m.length-1];
           var sender = lastMsg.username || 'Cineva';
+          var isGroup = room && room.is_group == 1;
+          var chatName = room ? room.name : 'Chat';
           var preview = (lastMsg.body || 'Fișier').slice(0,100);
-          ncNotify(sender, preview, function(){ loadRooms(); });
+          if(lastMsg.view_once == 1) preview = '👁️ Ai un mesaj efemer';
+          var notifTitle = (lastMsg.view_once == 1) ? 'Mesaj efemer de la ' + sender : (isGroup ? sender + ' în ' + chatName : 'Mesaj de la ' + sender);
+          ncNotify(notifTitle, preview, function(){ loadRooms(); });
         }
       }
     if(near||init)setTimeout(()=>b.scrollTop=b.scrollHeight,50);
