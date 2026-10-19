@@ -203,13 +203,26 @@ input[type="checkbox"]:checked::after{
     </div>
 
     <div class="form-group">
-      <label>Sumă (lei)</label>
+      <label>Sumă (MDL)</label>
       <input type="number" id="amountInput" placeholder="0.00" step="0.01" min="0">
     </div>
 
     <div class="form-group">
       <label data-i18n="who_paid">Cine a plătit?</label>
       <select id="paidBySelect"></select>
+
+    <div class="form-group">
+      <label data-i18n="category">Categorie</label>
+      <select id="catSelect">
+        <option value="food" data-i18n="cat_food">🍕 Mâncare</option>
+        <option value="transport" data-i18n="cat_transport">⛽ Transport</option>
+        <option value="housing" data-i18n="cat_housing">🏨 Cazare</option>
+        <option value="fun" data-i18n="cat_fun">🎉 Distracție</option>
+        <option value="shopping" data-i18n="cat_shopping">🛒 Cumpărături</option>
+        <option value="other" data-i18n="cat_other" selected>📦 Altele</option>
+      </select>
+    </div>
+
     </div>
 
     <div class="form-group">
@@ -241,6 +254,7 @@ var TRANSLATIONS = {
     add_expense: '💰 Adaugă Cheltuială',
     what_for: 'Pe ce ai dat banii?',
     amount: 'Sumă (MDL)',
+    category: 'Categorie',
     who_paid: 'Cine a plătit?',
     split_between: 'Între cine se împarte?',
     cancel: 'Anulează',
@@ -262,6 +276,12 @@ var TRANSLATIONS = {
     no_room: 'Lipsește ID-ul grupului!',
     error: 'Eroare:',
     desc_placeholder: 'Ex: Pizza, Benzină, Bilete...',
+    cat_food: '🍕 Mâncare',
+    cat_transport: '⛽ Transport',
+    cat_housing: '🏨 Cazare',
+    cat_fun: '🎉 Distracție',
+    cat_shopping: '🛒 Cumpărături',
+    cat_other: '📦 Altele',
     desc_placeholder: 'Ex: Pizza, Benzină, Bilete...',
     currency: 'MDL',
   },
@@ -273,6 +293,7 @@ var TRANSLATIONS = {
     add_expense: '💰 Добавить расход',
     what_for: 'На что потратили?',
     amount: 'Сумма (MDL)',
+    category: 'Категория',
     who_paid: 'Кто заплатил?',
     split_between: 'Между кем разделить?',
     cancel: 'Отмена',
@@ -294,6 +315,12 @@ var TRANSLATIONS = {
     no_room: 'Отсутствует ID группы!',
     error: 'Ошибка:',
     desc_placeholder: 'Напр: Пицца, Бензин, Билеты...',
+    cat_food: '🍕 Еда',
+    cat_transport: '⛽ Транспорт',
+    cat_housing: '🏨 Жильё',
+    cat_fun: '🎉 Развлечения',
+    cat_shopping: '🛒 Покупки',
+    cat_other: '📦 Другое',
     currency: 'MDL',
   }
 };
@@ -337,6 +364,12 @@ async function api(a, body, qs=''){
 async function apiChat(a, qs=''){
   const r = await fetch('../api.php?a=' + a + qs);
   return await r.json();
+}
+
+
+function getCatIcon(cat) {
+  const icons = { food: '🍕', transport: '⛽', housing: '🏨', fun: '🎉', shopping: '🛒', other: '📦' };
+  return icons[cat] || '📦';
 }
 
 function goBackToChat(){
@@ -464,7 +497,7 @@ function renderExpenses(data){
   box.innerHTML = data.map(e => `
     <div class="expense-item">
       <div class="expense-info">
-        <b>${e.description}</b>
+        <b>${getCatIcon(e.category)} ${e.description}</b>
         <span>${t('paid_by')} ${e.paid_by_name} • ${e.created_at.split(' ')[0]}</span>
       </div>
       <div class="expense-amount">${e.amount} MDL</div>
@@ -497,6 +530,7 @@ async function saveExpense(){
       paid_by: paidBy,
       amount: amount,
       description: desc,
+      category: document.getElementById('catSelect').value,
       split_with: checked
     });
     closeModal();

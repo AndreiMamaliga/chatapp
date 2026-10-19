@@ -1547,6 +1547,42 @@ html[data-pwa="1"] .nc-install-btn{
   }
 }
 
+
+/* FIX QUICK SPLIT MODAL - dropdown dark */
+#quickSplitDlg select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: rgba(255,255,255,.05) !important;
+  color: #fff !important;
+  border: 1px solid #333 !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 16px !important;
+  padding-right: 40px !important;
+  cursor: pointer;
+}
+#quickSplitDlg select option {
+  background-color: #27292d !important;
+  color: #fff !important;
+  padding: 10px !important;
+}
+#quickSplitDlg select:focus {
+  border-color: #0086ff !important;
+  box-shadow: 0 0 0 2px rgba(0,134,255,.2) !important;
+}
+/* Inputs și textarea în modal */
+#quickSplitDlg input,
+#quickSplitDlg textarea {
+  background-color: rgba(255,255,255,.05) !important;
+  color: #fff !important;
+  border: 1px solid #333 !important;
+}
+#quickSplitDlg input:focus {
+  border-color: #0086ff !important;
+  box-shadow: 0 0 0 2px rgba(0,134,255,.2) !important;
+}
+
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0086ff">
@@ -1662,6 +1698,7 @@ html[data-pwa="1"] .nc-install-btn{
         <button type="button" class="ico" id="emoBtn" title="Emoji">😊</button>
         <button type="button" class="ico" id="voiceBtn" title="Voice">🎙️</button>
         <button type="button" class="ico" id="pollBtn" title="Sondaj">📊</button>
+        <button type="button" class="ico" id="quickSplitBtn" title="Adaugă cheltuială rapidă">💸</button>
         <button type="button" class="ico" id="voBtn" title="Mesaj efemer">👁️</button>
         <textarea id="t" placeholder="Scrie un mesaj..." autocomplete="off" rows="1"></textarea>
         <button class="send" type="submit">➤</button>
@@ -3836,6 +3873,111 @@ function applyChatTranslations(){
 // Aplică traducerile la încărcarea paginii
 document.addEventListener('DOMContentLoaded', applyChatTranslations);
 
+
+
+// ========== QUICK SPLIT (Event Delegation) ==========
+(function(){
+  console.log('[QS] Init delegation handler');
+
+  // Handler pe document — prinde click-uri oriunde
+  document.addEventListener('click', function(e){
+    // Verifică dacă e click pe butonul 💸
+    var btn = e.target.closest('#quickSplitBtn');
+    if(!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('[QS] Click detectat! room:', typeof room !== 'undefined' ? room : 'undef');
+
+    // Verifică că suntem în cameră
+    if(typeof room === 'undefined' || !room || !room.id){
+      if(typeof toast === 'function') toast('Deschide o conversație', 'warn');
+      return;
+    }
+    if(room.is_group != 1){
+      if(typeof toast === 'function') toast('Doar în grupuri', 'warn');
+      return;
+    }
+
+    var dlg = document.getElementById('quickSplitDlg');
+    if(!dlg){ console.error('[QS] Modalul lipsește!'); return; }
+
+    document.getElementById('qsDesc').value = '';
+    document.getElementById('qsAmount').value = '';
+    document.getElementById('qsCategory').value = 'other';
+    dlg.showModal();
+    setTimeout(function(){ document.getElementById('qsDesc').focus(); }, 100);
+    console.log('[QS] Modal deschis');
+  }, true);
+
+  // Save — delegație și aici
+  document.addEventListener('click', async function(e){
+    var btn = e.target.closest('#qsSave');
+    if(!btn) return;
+    e.preventDefault();
+
+    console.log('[QS] Save apăsat');
+    var desc = document.getElementById('qsDesc').value.trim();
+    var amount = parseFloat(document.getElementById('qsAmount').value);
+    var cat = document.getElementById('qsCategory').value;
+
+    if(!desc){ if(typeof toast === 'function') toast('Scrie descrierea', 'warn'); return; }
+    if(!amount || amount <= 0){ if(typeof toast === 'function') toast('Introdu o sumă validă', 'warn'); return; }
+    if(typeof room === 'undefined' || !room || !room.id){ if(typeof toast === 'function') toast('Nu e cameră', 'err'); return; }
+    if(typeof me === 'undefined' || !me || !me.id){ if(typeof toast === 'function') toast('Nu e user', 'err'); return; }
+
+    btn.textContent = 'Se salvează...';
+    btn.disabled = true;
+
+    try{
+      console.log('[QS] Iau membrii...');
+      var members = await api('members', 0, '&room=' + room.id);
+      var memberIds = members.map(function(m){ return m.id; });
+      console.log('[QS] Membri:', memberIds);
+
+      var res = await fetch('api-split.php?a=add_expense', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          room_id: room.id, paid_by: me.id, amount: amount,
+          description: desc, category: cat, split_with: memberIds
+        })
+      });
+      var data = await res.json();
+      console.log('[QS] Response:', data);
+      if(!res.ok) throw data.error || 'Eroare';
+
+      document.getElementById('quickSplitDlg').close();
+      if(typeof toast === 'function') toast('💸 ' + desc + ' (' + amount + ' MDL)', 'ok', 2500);
+      if(typeof reloadMsgs === 'function') reloadMsgs();
+    }catch(err){
+      console.error('[QS] Eroare:', err);
+      if(typeof toast === 'function') toast('Eroare: ' + err, 'err');
+    }finally{
+      btn.textContent = 'Salvează';
+      btn.disabled = false;
+    }
+  }, true);
+
+  // Cancel
+  document.addEventListener('click', function(e){
+    if(e.target.closest('#qsCancel')){
+      var dlg = document.getElementById('quickSplitDlg');
+      if(dlg) dlg.close();
+    }
+  }, true);
+
+  // Escape → închide
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      var dlg = document.getElementById('quickSplitDlg');
+      if(dlg && dlg.open) dlg.close();
+    }
+  });
+
+  console.log('[QS] Handlers active');
+})();
+
 enter().catch(auth);
 
 // ========== SERVICE WORKER (PWA) ==========
@@ -3878,6 +4020,39 @@ if('serviceWorker' in navigator){
 <div id="splitOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:var(--theme-bg-color)">
   <iframe id="splitFrame" src="" style="width:100%;height:100%;border:0;display:block"></iframe>
 </div>
+
+
+<!-- QUICK SPLIT MODAL -->
+<dialog id="quickSplitDlg" style="border:1px solid #f845ff;border-radius:18px;padding:24px;width:min(440px,calc(100vw - 40px));background:var(--theme-bg-color);color:var(--text);position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;box-shadow:0 0 60px rgba(248,69,255,.4);z-index:3000">
+  <h3 style="margin:0 0 6px;font-size:16px;text-transform:uppercase;letter-spacing:1.5px;background:linear-gradient(90deg,#0086ff,#f845ff);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700">💸 Cheltuială rapidă</h3>
+  <div style="font-size:12px;color:#888;margin-bottom:16px">Se adaugă automat cu tine ca plătitor și se împarte la toți membrii.</div>
+
+  <label style="display:block;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Pe ce ai dat banii?</label>
+  <input id="qsDesc" placeholder="Ex: Pizza, Benzină..." style="width:100%;padding:12px;background:rgba(255,255,255,.05);border:1px solid var(--border-color);border-radius:10px;color:#fff;font:inherit;font-size:14px;outline:none;box-sizing:border-box;margin-bottom:12px">
+
+  <div style="display:flex;gap:10px;margin-bottom:16px">
+    <div style="flex:1">
+      <label style="display:block;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Sumă (MDL)</label>
+      <input id="qsAmount" type="number" placeholder="0.00" step="0.01" min="0" style="width:100%;padding:12px;background:rgba(255,255,255,.05);border:1px solid var(--border-color);border-radius:10px;color:#fff;font:inherit;font-size:14px;outline:none;box-sizing:border-box">
+    </div>
+    <div style="flex:1">
+      <label style="display:block;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Categorie</label>
+      <select id="qsCategory" style="width:100%;padding:12px;background:rgba(255,255,255,.05);border:1px solid var(--border-color);border-radius:10px;color:#fff;font:inherit;font-size:14px;outline:none;box-sizing:border-box;cursor:pointer">
+        <option value="food">🍕 Mâncare</option>
+        <option value="transport">⛽ Transport</option>
+        <option value="housing">🏨 Cazare</option>
+        <option value="fun">🎉 Distracție</option>
+        <option value="shopping">🛒 Cumpărături</option>
+        <option value="other" selected>📦 Altele</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button type="button" id="qsCancel" style="padding:10px 20px;background:transparent;color:#888;border:1px solid var(--border-color);border-radius:10px;font:inherit;font-weight:600;cursor:pointer">Anulează</button>
+    <button type="button" id="qsSave" style="padding:10px 24px;background:linear-gradient(135deg,#0086ff,#f845ff);color:#fff;border:0;border-radius:10px;font:inherit;font-weight:700;cursor:pointer;letter-spacing:.5px">Salvează</button>
+  </div>
+</dialog>
 
 </body>
 </html>

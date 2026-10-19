@@ -22,11 +22,12 @@ case 'add_expense':
  $amount=(float)($in['amount']??0);
  $desc=trim($in['description']??'');
  $split_with=(array)($in['split_with']??[]);
+ $category=trim($in['category']??'other');
 
  if(!member($r)||!$amount||!$desc||empty($split_with))out(['error'=>'Date invalide'],400);
 
  // 1. Adaugă cheltuiala
- q('INSERT INTO expenses(room_id,paid_by,amount,description) VALUES(?,?,?,?)',[$r,$paid_by,$amount,$desc]);
+ q('INSERT INTO expenses(room_id,paid_by,amount,description,category) VALUES(?,?,?,?,?)',[$r,$paid_by,$amount,$desc,$category]);
  $eid=$pdo->lastInsertId();
 
  // 2. Împarte suma la membrii selectați
@@ -58,7 +59,7 @@ case 'settle_up':
 case 'get_expenses':
  $r=(int)($_GET['room']??0);
  if(!member($r))out(['error'=>'Interzis'],403);
- $ms=q('SELECT e.id,e.amount,e.description,e.created_at,u.username as paid_by_name FROM expenses e JOIN users u ON u.id=e.paid_by WHERE e.room_id=? ORDER BY e.id DESC',[$r])->fetchAll();
+ $ms=q('SELECT e.id,e.amount,e.description,e.category,e.created_at,u.username as paid_by_name FROM expenses e JOIN users u ON u.id=e.paid_by WHERE e.room_id=? ORDER BY e.id DESC',[$r])->fetchAll();
  out($ms);
 
 case 'get_balances':
