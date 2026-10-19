@@ -39,6 +39,22 @@ case 'add_expense':
 
  out(['ok'=>1,'expense_id'=>$eid]);
 
+case 'settle_up':
+ $r=(int)($in['room_id']??0);
+ $from=(int)($in['from_user']??0);
+ $to=(int)($in['to_user']??0);
+ $amount=(float)($in['amount']??0);
+
+ if(!member($r)||!$from||!$to||!$amount)out(['error'=>'Date invalide'],400);
+
+ q('INSERT INTO settlements(room_id,from_user,to_user,amount) VALUES(?,?,?,?)',[$r,$from,$to,$amount]);
+
+ // Trimite mesaj automat în chat
+ $from_name=q('SELECT username FROM users WHERE id=?',[$from])->fetchColumn();
+ $to_name=q('SELECT username FROM users WHERE id=?',[$to])->fetchColumn();
+ q('INSERT INTO messages(room_id,user_id,body,type) VALUES(?,?,?,?)',[$r,$uid,"💸 $from_name a decontat $amount MDL către $to_name","text"]);
+
+ out(['ok'=>1]);
 case 'get_expenses':
  $r=(int)($_GET['room']??0);
  if(!member($r))out(['error'=>'Interzis'],403);
@@ -61,7 +77,14 @@ case 'get_balances':
    $balances[$o['uid']] -= (float)$o['total'];
  }
 
- // 3. Algoritmul de simplificare a datoriilor
+ // 3. Scădem decontările din balanțe
+ $sent=q('SELECT from_user as uid, SUM(amount) as total FROM settlements WHERE room_id=? GROUP BY from_user',[$r])->fetchAll();
+ foreach($sent as $s){ if(isset($balances[$s['uid']])) $balances[$s['uid']] += (float)$s['total']; }
+
+ $received=q('SELECT to_user as uid, SUM(amount) as total FROM settlements WHERE room_id=? GROUP BY to_user',[$r])->fetchAll();
+ foreach($received as $s){ if(isset($balances[$s['uid']])) $balances[$s['uid']] -= (float)$s['total']; }
+
+ // 4. Algoritmul de simplificare a datoriilor
  $debtors=[]; $creditors=[];
  foreach($balances as $uid=>$bal){
    if($bal < -0.01) $debtors[] = ['uid'=>$uid, 'bal'=>abs($bal)];
