@@ -35,7 +35,7 @@ case 'add_expense':
 
  // 3. Trimite un mesaj automat în chat (opțional, dar frumos)
  $u_name=q('SELECT username FROM users WHERE id=?',[$uid])->fetchColumn();
- q('INSERT INTO messages(room_id,user_id,body,type) VALUES(?,?,?,?)',[$r,$uid,"💰 $u_name a adăugat o cheltuială: $desc ($amount RON)","text"]);
+ q('INSERT INTO messages(room_id,user_id,body,type) VALUES(?,?,?,?)',[$r,$uid,"💰 $desc — $amount MDL","text"]);
 
  out(['ok'=>1,'expense_id'=>$eid]);
 

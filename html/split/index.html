@@ -132,17 +132,17 @@ input[type="checkbox"]:checked::after{
     <button class="back-btn" onclick="goBackToChat()">←</button>
     <div style="flex:1">
       <div class="title" id="groupName">Se încarcă...</div>
-      <div class="subtitle">Cheltuieli comune</div>
+      <div class="subtitle" data-i18n="subtitle">Cheltuieli comune</div>
     </div>
   </div>
 
   <div class="summary" id="summaryCard">
-    <h3>Rezumat datorii</h3>
-    <div id="balancesList">Se calculează...</div>
+    <h3 data-i18n="summary">Rezumat datorii</h3>
+    <div id="balancesList" data-i18n="calculating">Se calculează...</div>
   </div>
 
   <div class="expenses">
-    <h3>Istoric cheltuieli</h3>
+    <h3 data-i18n="history">Istoric cheltuieli</h3>
     <div id="expensesList"></div>
   </div>
 
@@ -152,10 +152,10 @@ input[type="checkbox"]:checked::after{
 <!-- MODAL ADAUGARE CHELTUIALA -->
 <div class="modal" id="addModal">
   <div class="modal-content">
-    <h2>💰 Adaugă Cheltuială</h2>
+    <h2 data-i18n="add_expense">💰 Adaugă Cheltuială</h2>
 
     <div class="form-group">
-      <label>Pe ce ai dat banii?</label>
+      <label data-i18n="what_for">Pe ce ai dat banii?</label>
       <input type="text" id="descInput" placeholder="Ex: Pizza, Benzină, Bilete...">
     </div>
 
@@ -165,18 +165,18 @@ input[type="checkbox"]:checked::after{
     </div>
 
     <div class="form-group">
-      <label>Cine a plătit?</label>
+      <label data-i18n="who_paid">Cine a plătit?</label>
       <select id="paidBySelect"></select>
     </div>
 
     <div class="form-group">
-      <label>Între cine se împarte?</label>
+      <label data-i18n="split_between">Între cine se împarte?</label>
       <div class="members-list" id="splitWithList"></div>
     </div>
 
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Anulează</button>
-      <button class="btn-save" onclick="saveExpense()">Salvează</button>
+      <button class="btn-cancel" onclick="closeModal()" data-i18n="cancel">Anulează</button>
+      <button class="btn-save" onclick="saveExpense()" data-i18n="save">Salvează</button>
     </div>
   </div>
 </div>
@@ -188,6 +188,88 @@ const roomId = urlParams.get('room') || 0;
 let members = [];
 let myUserId = null;
 
+// ========== i18n SYSTEM ==========
+var TRANSLATIONS = {
+  ro: {
+    subtitle: 'Cheltuieli comune',
+    summary: 'Rezumat datorii',
+    calculating: 'Se calculează...',
+    history: 'Istoric cheltuieli',
+    add_expense: '💰 Adaugă Cheltuială',
+    what_for: 'Pe ce ai dat banii?',
+    amount: 'Sumă (MDL)',
+    who_paid: 'Cine a plătit?',
+    split_between: 'Între cine se împarte?',
+    cancel: 'Anulează',
+    save: 'Salvează',
+    owes_you: 'îți datorează',
+    you_owe: 'Tu îi datorezi lui',
+    owes_to: 'îi datorează lui',
+    all_even: 'Toată lumea e la egalitate 🎉',
+    no_expenses: 'Nicio cheltuială înregistrată.',
+    paid_by: 'plătit de',
+    fill_all: 'Completează descrierea, suma și cine a beneficiat!',
+    save_error: 'Eroare la salvare:',
+    no_room: 'Lipsește ID-ul grupului!',
+    error: 'Eroare:',
+    desc_placeholder: 'Ex: Pizza, Benzină, Bilete...',
+    desc_placeholder: 'Ex: Pizza, Benzină, Bilete...',
+    currency: 'MDL',
+  },
+  ru: {
+    subtitle: 'Общие расходы',
+    summary: 'Сводка долгов',
+    calculating: 'Загрузка...',
+    history: 'История расходов',
+    add_expense: '💰 Добавить расход',
+    what_for: 'На что потратили?',
+    amount: 'Сумма (MDL)',
+    who_paid: 'Кто заплатил?',
+    split_between: 'Между кем разделить?',
+    cancel: 'Отмена',
+    save: 'Сохранить',
+    owes_you: 'должен тебе',
+    you_owe: 'Ты должен',
+    owes_to: 'должен',
+    all_even: 'Все в расчёте 🎉',
+    no_expenses: 'Нет записей о расходах.',
+    paid_by: 'оплачено',
+    fill_all: 'Заполните описание, сумму и участников!',
+    save_error: 'Ошибка сохранения:',
+    no_room: 'Отсутствует ID группы!',
+    error: 'Ошибка:',
+    desc_placeholder: 'Напр: Пицца, Бензин, Билеты...',
+    currency: 'MDL',
+  }
+};
+
+var CURRENT_LANG = localStorage.getItem('nc_lang') || 'ro';
+function t(key){
+  return (TRANSLATIONS[CURRENT_LANG] && TRANSLATIONS[CURRENT_LANG][key]) || TRANSLATIONS.ro[key] || key;
+}
+
+function applyTranslations(){
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+  // Placeholder textarea
+  var descInput = document.getElementById('descInput');
+  if(descInput) descInput.placeholder = t('desc_placeholder');
+  // Re-randează datele dinamice (balanțe + cheltuieli) în limba nouă
+  if(typeof loadData === 'function') loadData();
+}
+
+// Ascultă schimbări de limbă de la chat (când rulează în iframe)
+window.addEventListener('message', function(e){
+  if(e.data === 'langChanged'){
+    CURRENT_LANG = localStorage.getItem('nc_lang') || 'ro';
+    console.log('[I18N] Limbă schimbată la:', CURRENT_LANG);
+    applyTranslations();
+  }
+});
+
+// ========== API HELPERS ==========
 async function api(a, body, qs=''){
   const opt = body ? {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)} : {};
   const r = await fetch('../api-split.php?a=' + a + qs, opt);
@@ -203,11 +285,17 @@ async function apiChat(a, qs=''){
 }
 
 function goBackToChat(){
-  window.location.href = '../';
+  if(window.parent !== window){
+    // Suntem într-un iframe (overlay peste chat)
+    window.parent.postMessage('closeSplit', '*');
+  } else {
+    // Suntem într-un tab normal
+    window.location.href = '../';
+  }
 }
 
 async function init(){
-  if(!roomId) { alert('Lipsește ID-ul grupului!'); goBackToChat(); return; }
+  if(!roomId) { alert(t('no_room')); goBackToChat(); return; }
 
   try {
     // 1. Aflăm cine suntem
@@ -239,7 +327,7 @@ async function init(){
     loadData();
 
   } catch(e) {
-    alert('Eroare: ' + e);
+    alert(t('error') + ' ' + e);
   }
 }
 
@@ -258,24 +346,24 @@ function renderBalances(data){
   box.innerHTML = '';
 
   if(data.transactions.length === 0){
-    box.innerHTML = '<div class="balance-row neutral">Toată lumea e la egalitate 🎉</div>';
+    box.innerHTML = '<div class="balance-row neutral">' + t('all_even') + '</div>';
     return;
   }
 
-  data.transactions.forEach(t => {
+  data.transactions.forEach(tx => {
     const div = document.createElement('div');
-    if(t.to === myUserId){
+    if(tx.to === myUserId){
       // Cineva îmi datorează mie
       div.className = 'balance-row positive';
-      div.innerHTML = `<span>🟢 ${t.from_name} îți datorează</span> <b>${t.amount} lei</b>`;
-    } else if(t.from === myUserId){
+      div.innerHTML = `<span>🟢 ${tx.from_name} ${t('owes_you')}</span> <b>${tx.amount} ${t('currency')}</b>`;
+    } else if(tx.from === myUserId){
       // Eu datorez cuiva
       div.className = 'balance-row negative';
-      div.innerHTML = `<span>🔴 Tu îi datorezi lui ${t.to_name}</span> <b>${t.amount} lei</b>`;
+      div.innerHTML = `<span>🔴 ${t('you_owe')} ${tx.to_name}</span> <b>${tx.amount} ${t('currency')}</b>`;
     } else {
       // Alți oameni între ei
       div.className = 'balance-row neutral';
-      div.innerHTML = `<span>${t.from_name} îi datorează lui ${t.to_name}</span> <b>${t.amount} lei</b>`;
+      div.innerHTML = `<span>${tx.from_name} ${t('owes_to')} ${tx.to_name}</span> <b>${tx.amount} ${t('currency')}</b>`;
     }
     box.appendChild(div);
   });
@@ -284,7 +372,7 @@ function renderBalances(data){
 function renderExpenses(data){
   const box = $('#expensesList');
   if(data.length === 0){
-    box.innerHTML = '<p style="color:#888;font-size:14px;">Nicio cheltuială înregistrată.</p>';
+    box.innerHTML = '<p style="color:#888;font-size:14px;">' + t('no_expenses') + '</p>';
     return;
   }
 
@@ -292,9 +380,9 @@ function renderExpenses(data){
     <div class="expense-item">
       <div class="expense-info">
         <b>${e.description}</b>
-        <span>plătit de ${e.paid_by_name} • ${e.created_at.split(' ')[0]}</span>
+        <span>${t('paid_by')} ${e.paid_by_name} • ${e.created_at.split(' ')[0]}</span>
       </div>
-      <div class="expense-amount">${e.amount} lei</div>
+      <div class="expense-amount">${e.amount} MDL</div>
     </div>
   `).join('');
 }
@@ -314,7 +402,7 @@ async function saveExpense(){
   const checked = [...document.querySelectorAll('#splitWithList input:checked')].map(i => parseInt(i.value));
 
   if(!desc || !amount || checked.length === 0){
-    alert('Completează descrierea, suma și cine a beneficiat!');
+    alert(t('fill_all'));
     return;
   }
 
@@ -329,10 +417,11 @@ async function saveExpense(){
     closeModal();
     loadData(); // Refresh
   } catch(e) {
-    alert('Eroare la salvare: ' + e);
+    alert(t('save_error') + ' ' + e);
   }
 }
 
+applyTranslations();
 init();
 </script>
 </body>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0086ff">
+<title>NeonChat - Împarte Cheltuielile</title>
+<style>
+:root{
+  --bg:#1d1d1d; --theme-bg:#27292d; --border:#323336; --text:#d1d1d2;
+  --theme-color:#0086ff; --accent:#f845ff; --success:#23be7e; --danger:#ff4266;
+  --body-font:'Manrope','Rajdhani',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--body-font);height:100vh;display:flex;justify-content:center;overflow:hidden}
+.app{width:100%;max-width:600px;background:var(--theme-bg);display:flex;flex-direction:column;height:100vh;position:relative;box-shadow:0 0 40px rgba(0,0,0,.5)}
+
+/* HEADER */
+.header{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--theme-bg);gap:12px}
+.back-btn{background:none;border:0;color:var(--text);font-size:24px;cursor:pointer;padding:5px}
+.title{font-size:18px;font-weight:700;color:#fff;flex:1}
+.subtitle{font-size:12px;color:#888;margin-top:2px}
+
+/* SUMMARY CARD */
+.summary{padding:20px;border-bottom:1px solid var(--border);background:linear-gradient(180deg, rgba(0,134,255,.1), transparent)}
+.summary h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:12px}
+.balance-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:12px;margin-bottom:8px;font-weight:600;font-size:15px}
+.balance-row.positive{background:rgba(35,190,126,.1);color:var(--success);border:1px solid rgba(35,190,126,.2)}
+.balance-row.negative{background:rgba(255,66,102,.1);color:var(--danger);border:1px solid rgba(255,66,102,.2)}
+.balance-row.neutral{background:rgba(255,255,255,.05);color:#fff;border:1px solid var(--border)}
+
+/* EXPENSES LIST */
+.expenses{flex:1;overflow-y:auto;padding:20px}
+.expenses h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:12px}
+.expense-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.expense-info b{color:#fff;font-size:15px;display:block;margin-bottom:4px}
+.expense-info span{font-size:12px;color:#888}
+.expense-amount{font-weight:700;color:var(--theme-color);font-size:16px;white-space:nowrap;margin-left:10px}
+
+/* FAB (Floating Action Button) */
+.fab{position:absolute;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--theme-color),var(--accent));border:0;color:#fff;font-size:32px;cursor:pointer;box-shadow:0 8px 24px rgba(0,134,255,.4);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.fab:hover{transform:scale(1.1)}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
+.modal.on{display:flex}
+.modal-content{background:var(--theme-bg);width:100%;max-width:400px;border-radius:20px;padding:24px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.5);margin:20px}
+.modal h2{font-size:18px;margin-bottom:20px;color:#fff}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+input, select{width:100%;padding:12px 14px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;color:#fff;font-family:var(--body-font);font-size:14px;outline:none}
+input:focus, select:focus{border-color:var(--theme-color)}
+.members-list{max-height:120px;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:10px;padding:10px}
+.member-check{display:flex;align-items:center;gap:10px;padding:8px;cursor:pointer;border-radius:8px}
+.member-check:hover{background:rgba(255,255,255,.05)}
+.member-check input{width:auto}
+.modal-actions{display:flex;gap:10px;margin-top:24px}
+.btn-cancel{flex:1;padding:12px;background:transparent;border:1px solid var(--border);border-radius:10px;color:#888;cursor:pointer;font-weight:600}
+.btn-save{flex:1;padding:12px;background:linear-gradient(135deg,var(--theme-color),var(--accent));border:0;border-radius:10px;color:#fff;cursor:pointer;font-weight:700}
+
+/* SELECT + OPTIONS (fix pentru dropdown alb) */
+html, body{
+  color-scheme: dark;
+}
+
+select{
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: rgba(255,255,255,.05);
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+select option{
+  background-color: #27292d;
+  color: #d1d1d2;
+  padding: 10px;
+}
+
+select:focus{
+  border-color: var(--theme-color);
+  box-shadow: 0 0 0 2px rgba(0,134,255,.2);
+}
+
+/* Modal + backdrop */
+.modal-content{
+  background: #27292d !important;
+}
+
+/* Checkbox-uri stilizate */
+input[type="checkbox"]{
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #555;
+  border-radius: 4px;
+  background: rgba(255,255,255,.05);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: all .15s;
+}
+
+input[type="checkbox"]:checked{
+  background: linear-gradient(135deg, var(--theme-color), var(--accent));
+  border-color: var(--theme-color);
+}
+
+input[type="checkbox"]:checked::after{
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <button class="back-btn" onclick="goBackToChat()">←</button>
+    <div style="flex:1">
+      <div class="title" id="groupName">Se încarcă...</div>
+      <div class="subtitle" data-i18n="subtitle">Cheltuieli comune</div>
+    </div>
+  </div>
+
+  <div class="summary" id="summaryCard">
+    <h3 data-i18n="summary">Rezumat datorii</h3>
+    <div id="balancesList" data-i18n="calculating">Se calculează...</div>
+  </div>
+
+  <div class="expenses">
+    <h3 data-i18n="history">Istoric cheltuieli</h3>
+    <div id="expensesList"></div>
+  </div>
+
+  <button class="fab" onclick="openModal()">+</button>
+</div>
+
+<!-- MODAL ADAUGARE CHELTUIALA -->
+<div class="modal" id="addModal">
+  <div class="modal-content">
+    <h2 data-i18n="add_expense">💰 Adaugă Cheltuială</h2>
+
+    <div class="form-group">
+      <label data-i18n="what_for">Pe ce ai dat banii?</label>
+      <input type="text" id="descInput" placeholder="Ex: Pizza, Benzină, Bilete...">
+    </div>
+
+    <div class="form-group">
+      <label>Sumă (lei)</label>
+      <input type="number" id="amountInput" placeholder="0.00" step="0.01" min="0">
+    </div>
+
+    <div class="form-group">
+      <label data-i18n="who_paid">Cine a plătit?</label>
+      <select id="paidBySelect"></select>
+    </div>
+
+    <div class="form-group">
+      <label data-i18n="split_between">Între cine se împarte?</label>
+      <div class="members-list" id="splitWithList"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()" data-i18n="cancel">Anulează</button>
+      <button class="btn-save" onclick="saveExpense()" data-i18n="save">Salvează</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const urlParams = new URLSearchParams(window.location.search);
+const roomId = urlParams.get('room') || 0;
+let members = [];
+let myUserId = null;
+
+// ========== i18n SYSTEM ==========
+var TRANSLATIONS = {
+  ro: {
+    subtitle: 'Cheltuieli comune',
+    summary: 'Rezumat datorii',
+    calculating: 'Se calculează...',
+    history: 'Istoric cheltuieli',
+    add_expense: '💰 Adaugă Cheltuială',
+    what_for: 'Pe ce ai dat banii?',
+    amount: 'Sumă (MDL)',
+    who_paid: 'Cine a plătit?',
+    split_between: 'Între cine se împarte?',
+    cancel: 'Anulează',
+    save: 'Salvează',
+    owes_you: 'îți datorează',
+    you_owe: 'Tu îi datorezi lui',
+    owes_to: 'îi datorează lui',
+    all_even: 'Toată lumea e la egalitate 🎉',
+    no_expenses: 'Nicio cheltuială înregistrată.',
+    paid_by: 'plătit de',
+    fill_all: 'Completează descrierea, suma și cine a beneficiat!',
+    save_error: 'Eroare la salvare:',
+    no_room: 'Lipsește ID-ul grupului!',
+    error: 'Eroare:',
+    desc_placeholder: 'Ex: Pizza, Benzină, Bilete...',
+    desc_placeholder: 'Ex: Pizza, Benzină, Bilete...',
+    currency: 'MDL',
+  },
+  ru: {
+    subtitle: 'Общие расходы',
+    summary: 'Сводка долгов',
+    calculating: 'Загрузка...',
+    history: 'История расходов',
+    add_expense: '💰 Добавить расход',
+    what_for: 'На что потратили?',
+    amount: 'Сумма (MDL)',
+    who_paid: 'Кто заплатил?',
+    split_between: 'Между кем разделить?',
+    cancel: 'Отмена',
+    save: 'Сохранить',
+    owes_you: 'должен тебе',
+    you_owe: 'Ты должен',
+    owes_to: 'должен',
+    all_even: 'Все в расчёте 🎉',
+    no_expenses: 'Нет записей о расходах.',
+    paid_by: 'оплачено',
+    fill_all: 'Заполните описание, сумму и участников!',
+    save_error: 'Ошибка сохранения:',
+    no_room: 'Отсутствует ID группы!',
+    error: 'Ошибка:',
+    desc_placeholder: 'Напр: Пицца, Бензин, Билеты...',
+    currency: 'MDL',
+  }
+};
+
+var CURRENT_LANG = localStorage.getItem('nc_lang') || 'ro';
+function t(key){
+  return (TRANSLATIONS[CURRENT_LANG] && TRANSLATIONS[CURRENT_LANG][key]) || TRANSLATIONS.ro[key] || key;
+}
+
+function applyTranslations(){
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+  // Placeholder textarea
+  var descInput = document.getElementById('descInput');
+  if(descInput) descInput.placeholder = t('desc_placeholder');
+  // Re-randează datele dinamice (balanțe + cheltuieli) în limba nouă
+  if(typeof loadData === 'function') loadData();
+}
+
+// Ascultă schimbări de limbă de la chat (când rulează în iframe)
+window.addEventListener('message', function(e){
+  if(e.data === 'langChanged'){
+    CURRENT_LANG = localStorage.getItem('nc_lang') || 'ro';
+    console.log('[I18N] Limbă schimbată la:', CURRENT_LANG);
+    applyTranslations();
+  }
+});
+
+// ========== API HELPERS ==========
+async function api(a, body, qs=''){
+  const opt = body ? {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)} : {};
+  const r = await fetch('../api-split.php?a=' + a + qs, opt);
+  const j = await r.json();
+  if(r.status === 401){ window.location.href = '../'; throw 0; }
+  if(!r.ok) throw j.error || 'Eroare';
+  return j;
+}
+
+async function apiChat(a, qs=''){
+  const r = await fetch('../api.php?a=' + a + qs);
+  return await r.json();
+}
+
+function goBackToChat(){
+  if(window.parent !== window){
+    // Suntem într-un iframe (overlay peste chat)
+    window.parent.postMessage('closeSplit', '*');
+  } else {
+    // Suntem într-un tab normal
+    window.location.href = '../';
+  }
+}
+
+async function init(){
+  if(!roomId) { alert(t('no_room')); goBackToChat(); return; }
+
+  try {
+    // 1. Aflăm cine suntem
+    const me = await apiChat('me');
+    myUserId = me.id;
+
+    // 2. Aflăm membrii grupului
+    const mList = await apiChat('members', '&room=' + roomId);
+    members = mList;
+
+    // 3. Populăm dropdown-ul "Cine a plătit?"
+    $('#paidBySelect').innerHTML = members.map(m =>
+      `<option value="${m.id}" ${m.id === myUserId ? 'selected' : ''}>${m.username}</option>`
+    ).join('');
+
+    // 4. Populăm lista "Între cine se împarte?" (toți bifați by default)
+    $('#splitWithList').innerHTML = members.map(m =>
+      `<label class="member-check">
+        <input type="checkbox" value="${m.id}" checked> ${m.username}
+      </label>`
+    ).join('');
+
+    // Setează numele grupului
+    const rooms = await apiChat('rooms');
+    const currentRoom = rooms.find(r => r.id == roomId);
+    if(currentRoom) $('#groupName').textContent = currentRoom.name;
+
+    // 5. Încarcă datele
+    loadData();
+
+  } catch(e) {
+    alert(t('error') + ' ' + e);
+  }
+}
+
+async function loadData(){
+  // Încarcă balanțele
+  const bData = await api('get_balances', 0, '&room=' + roomId);
+  renderBalances(bData);
+
+  // Încarcă istoricul
+  const expData = await api('get_expenses', 0, '&room=' + roomId);
+  renderExpenses(expData);
+}
+
+function renderBalances(data){
+  const box = $('#balancesList');
+  box.innerHTML = '';
+
+  if(data.transactions.length === 0){
+    box.innerHTML = '<div class="balance-row neutral">' + t('all_even') + '</div>';
+    return;
+  }
+
+  data.transactions.forEach(t => {
+    const div = document.createElement('div');
+    if(t.to === myUserId){
+      // Cineva îmi datorează mie
+      div.className = 'balance-row positive';
+      div.innerHTML = `<span>🟢 ${t.from_name} îți datorează</span> <b>${t.amount} MDL</b>`;
+    } else if(t.from === myUserId){
+      // Eu datorez cuiva
+      div.className = 'balance-row negative';
+      div.innerHTML = `<span>🔴 Tu îi datorezi lui ${t.to_name}</span> <b>${t.amount} MDL</b>`;
+    } else {
+      // Alți oameni între ei
+      div.className = 'balance-row neutral';
+      div.innerHTML = `<span>${t.from_name} îi datorează lui ${t.to_name}</span> <b>${t.amount} MDL</b>`;
+    }
+    box.appendChild(div);
+  });
+}
+
+function renderExpenses(data){
+  const box = $('#expensesList');
+  if(data.length === 0){
+    box.innerHTML = '<p style="color:#888;font-size:14px;">' + t('no_expenses') + '</p>';
+    return;
+  }
+
+  box.innerHTML = data.map(e => `
+    <div class="expense-item">
+      <div class="expense-info">
+        <b>${e.description}</b>
+        <span>${t('paid_by')} ${e.paid_by_name} • ${e.created_at.split(' ')[0]}</span>
+      </div>
+      <div class="expense-amount">${e.amount} MDL</div>
+    </div>
+  `).join('');
+}
+
+function openModal(){ $('#addModal').classList.add('on'); }
+function closeModal(){
+  $('#addModal').classList.remove('on');
+  $('#descInput').value = '';
+  $('#amountInput').value = '';
+}
+
+async function saveExpense(){
+  const desc = $('#descInput').value.trim();
+  const amount = parseFloat($('#amountInput').value);
+  const paidBy = parseInt($('#paidBySelect').value);
+
+  const checked = [...document.querySelectorAll('#splitWithList input:checked')].map(i => parseInt(i.value));
+
+  if(!desc || !amount || checked.length === 0){
+    alert(t('fill_all'));
+    return;
+  }
+
+  try {
+    await api('add_expense', {
+      room_id: roomId,
+      paid_by: paidBy,
+      amount: amount,
+      description: desc,
+      split_with: checked
+    });
+    closeModal();
+    loadData(); // Refresh
+  } catch(e) {
+    alert(t('save_error') + ' ' + e);
+  }
+}
+
+applyTranslations();
+init();
+</script>
+</body>
+</html>

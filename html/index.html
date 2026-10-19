@@ -1696,6 +1696,13 @@ html[data-pwa="1"] .nc-install-btn{
     </div>
     <button class="profile-save" id="saveProf" type="button">💾 Salvează</button>
     <div class="p-card" style="margin-top:16px">
+      <label>🌐 Limba / Язык</label>
+      <select id="langSelect" style="width:100%;padding:12px 14px;background:var(--input-bg);border:1px solid var(--border-color);border-radius:10px;color:var(--text);font:inherit;outline:none;cursor:pointer">
+        <option value="ro">🇷🇴 Română</option>
+        <option value="ru">🇷🇺 Русский</option>
+      </select>
+    </div>
+    <div class="p-card" style="margin-top:16px">
       <label>🔐 Schimbă parola</label>
       <input id="oldPass" type="password" placeholder="Parola veche" style="margin-bottom:8px">
       <input id="newPass" type="password" placeholder="Parola nouă (min 6 caractere)" style="margin-bottom:8px">
@@ -3708,12 +3715,125 @@ function updateSidebarDrafts(){
   if(splitBtn){
     splitBtn.onclick = function(){
       if(!room || !room.id) return;
-      // Deschide pagina split în tab nou (păstrează chat-ul deschis)
-      window.open('/split/?room=' + room.id, '_blank');
+      var frame = document.getElementById('splitFrame');
+      var overlay = document.getElementById('splitOverlay');
+      if(frame && overlay){
+        frame.src = '/split/?room=' + room.id;
+        overlay.style.display = 'block';
+      }
     };
+
+    // Ascultă mesajul de la iframe pentru a închide overlay-ul
+    window.addEventListener('message', function(e){
+      if(e.data === 'closeSplit'){
+        var overlay = document.getElementById('splitOverlay');
+        var frame = document.getElementById('splitFrame');
+        if(overlay) overlay.style.display = 'none';
+        if(frame) frame.src = 'about:blank';
+      }
+    });
     console.log('[SPLIT] Buton handler activat');
   }
 })();
+
+
+// ========== LANGUAGE SELECTOR ==========
+(function(){
+  var langSel = document.getElementById('langSelect');
+  if(!langSel) return;
+
+  // Încarcă limba salvată
+  var savedLang = localStorage.getItem('nc_lang') || 'ro';
+  langSel.value = savedLang;
+
+  // La schimbare
+  langSel.addEventListener('change', function(){
+    var lang = this.value;
+    localStorage.setItem('nc_lang', lang);
+    try{ if(typeof toast === 'function') toast('🌐 Limbă salvată: ' + (lang === 'ru' ? 'Русский' : 'Română'), 'ok'); }catch(e){}
+
+    // Notifică iframe-ul Split (dacă e deschis)
+    var frame = document.getElementById('splitFrame');
+    if(frame && frame.contentWindow){
+      try{ frame.contentWindow.postMessage('langChanged', '*'); }catch(e){}
+    }
+  });
+
+  console.log('[I18N] Language selector activ, curent:', savedLang);
+})();
+
+
+// ========== CHAT i18n SYSTEM ==========
+var CHAT_TRANSLATIONS = {
+  ro: {
+    search_placeholder: 'Caută...',
+    search_chats: 'Caută conversații...',
+    btn_chat: '＋ Chat',
+    btn_group: '＋ Grup',
+    msg_placeholder: 'Scrie un mesaj...',
+    welcome_title: 'Bine ai venit!',
+    welcome_sub: 'Alege o conversație sau începe una nouă',
+    choose_chat: 'Alege o conversație',
+    type_msg: 'Scrie un mesaj...',
+  },
+  ru: {
+    search_placeholder: 'Поиск...',
+    search_chats: 'Поиск чатов...',
+    btn_chat: '＋ Чат',
+    btn_group: '＋ Группа',
+    msg_placeholder: 'Написать сообщение...',
+    welcome_title: 'Добро пожаловать!',
+    welcome_sub: 'Выберите чат или начните новый',
+    choose_chat: 'Выберите чат',
+    type_msg: 'Написать сообщение...',
+  }
+};
+
+function applyChatTranslations(){
+  var lang = localStorage.getItem('nc_lang') || 'ro';
+  var dict = CHAT_TRANSLATIONS[lang] || CHAT_TRANSLATIONS.ro;
+
+  // Câmpuri de căutare
+  var sq = document.getElementById('sq');
+  if(sq) sq.placeholder = dict.search_placeholder;
+  var ncSearch = document.getElementById('ncSearch');
+  if(ncSearch) ncSearch.placeholder = dict.search_chats;
+
+  // Butoane
+  var nd = document.getElementById('nd');
+  if(nd) nd.textContent = dict.btn_chat;
+  var ng = document.getElementById('ng');
+  if(ng) ng.textContent = dict.btn_group;
+
+  // Placeholder textarea mesaj
+  var tInput = document.getElementById('t');
+  if(tInput) tInput.placeholder = dict.msg_placeholder;
+
+  // Starea de "Empty"
+  var emptyH3 = document.querySelector('#empty h3');
+  if(emptyH3) emptyH3.textContent = dict.welcome_title;
+  var emptyDiv = document.querySelector('#empty div:not(.big)');
+  if(emptyDiv) emptyDiv.textContent = dict.welcome_sub;
+
+  // Titlu conversație (dacă nu e deschisă)
+  var title = document.getElementById('title');
+  if(title && (title.textContent === 'Alege o conversație' || title.textContent === 'Выберите чат')){
+    title.textContent = dict.choose_chat;
+  }
+}
+
+// Ascultă schimbarea limbii din selector
+(function(){
+  var langSel = document.getElementById('langSelect');
+  if(langSel){
+    langSel.addEventListener('change', function(){
+      setTimeout(applyChatTranslations, 50);
+    });
+  }
+})();
+
+// Aplică traducerile la încărcarea paginii
+document.addEventListener('DOMContentLoaded', applyChatTranslations);
 
 enter().catch(auth);
 
@@ -3751,6 +3871,12 @@ if('serviceWorker' in navigator){
   </div>
 </dialog>
 
+
+
+<!-- SPLIT OVERLAY -->
+<div id="splitOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:var(--theme-bg-color)">
+  <iframe id="splitFrame" src="" style="width:100%;height:100%;border:0;display:block"></iframe>
+</div>
 
 </body>
 </html>
