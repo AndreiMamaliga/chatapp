@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0086ff">
+<title>NeonChat - Împarte Cheltuielile</title>
+<style>
+:root{
+  --bg:#1d1d1d; --theme-bg:#27292d; --border:#323336; --text:#d1d1d2;
+  --theme-color:#0086ff; --accent:#f845ff; --success:#23be7e; --danger:#ff4266;
+  --body-font:'Manrope','Rajdhani',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--body-font);height:100vh;display:flex;justify-content:center;overflow:hidden}
+.app{width:100%;max-width:600px;background:var(--theme-bg);display:flex;flex-direction:column;height:100vh;position:relative;box-shadow:0 0 40px rgba(0,0,0,.5)}
+
+/* HEADER */
+.header{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--theme-bg);gap:12px}
+.back-btn{background:none;border:0;color:var(--text);font-size:24px;cursor:pointer;padding:5px}
+.title{font-size:18px;font-weight:700;color:#fff;flex:1}
+.subtitle{font-size:12px;color:#888;margin-top:2px}
+
+/* SUMMARY CARD */
+.summary{padding:20px;border-bottom:1px solid var(--border);background:linear-gradient(180deg, rgba(0,134,255,.1), transparent)}
+.summary h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:12px}
+.balance-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:12px;margin-bottom:8px;font-weight:600;font-size:15px}
+.balance-row.positive{background:rgba(35,190,126,.1);color:var(--success);border:1px solid rgba(35,190,126,.2)}
+.balance-row.negative{background:rgba(255,66,102,.1);color:var(--danger);border:1px solid rgba(255,66,102,.2)}
+.balance-row.neutral{background:rgba(255,255,255,.05);color:#fff;border:1px solid var(--border)}
+
+/* EXPENSES LIST */
+.expenses{flex:1;overflow-y:auto;padding:20px}
+.expenses h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:12px}
+.expense-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.expense-info b{color:#fff;font-size:15px;display:block;margin-bottom:4px}
+.expense-info span{font-size:12px;color:#888}
+.expense-amount{font-weight:700;color:var(--theme-color);font-size:16px;white-space:nowrap;margin-left:10px}
+
+/* FAB (Floating Action Button) */
+.fab{position:absolute;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--theme-color),var(--accent));border:0;color:#fff;font-size:32px;cursor:pointer;box-shadow:0 8px 24px rgba(0,134,255,.4);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.fab:hover{transform:scale(1.1)}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
+.modal.on{display:flex}
+.modal-content{background:var(--theme-bg);width:100%;max-width:400px;border-radius:20px;padding:24px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.5);margin:20px}
+.modal h2{font-size:18px;margin-bottom:20px;color:#fff}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+input, select{width:100%;padding:12px 14px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;color:#fff;font-family:var(--body-font);font-size:14px;outline:none}
+input:focus, select:focus{border-color:var(--theme-color)}
+.members-list{max-height:120px;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:10px;padding:10px}
+.member-check{display:flex;align-items:center;gap:10px;padding:8px;cursor:pointer;border-radius:8px}
+.member-check:hover{background:rgba(255,255,255,.05)}
+.member-check input{width:auto}
+.modal-actions{display:flex;gap:10px;margin-top:24px}
+.btn-cancel{flex:1;padding:12px;background:transparent;border:1px solid var(--border);border-radius:10px;color:#888;cursor:pointer;font-weight:600}
+.btn-save{flex:1;padding:12px;background:linear-gradient(135deg,var(--theme-color),var(--accent));border:0;border-radius:10px;color:#fff;cursor:pointer;font-weight:700}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <button class="back-btn" onclick="goBackToChat()">←</button>
+    <div style="flex:1">
+      <div class="title" id="groupName">Se încarcă...</div>
+      <div class="subtitle">Cheltuieli comune</div>
+    </div>
+  </div>
+
+  <div class="summary" id="summaryCard">
+    <h3>Rezumat datorii</h3>
+    <div id="balancesList">Se calculează...</div>
+  </div>
+
+  <div class="expenses">
+    <h3>Istoric cheltuieli</h3>
+    <div id="expensesList"></div>
+  </div>
+
+  <button class="fab" onclick="openModal()">+</button>
+</div>
+
+<!-- MODAL ADAUGARE CHELTUIALA -->
+<div class="modal" id="addModal">
+  <div class="modal-content">
+    <h2>💰 Adaugă Cheltuială</h2>
+
+    <div class="form-group">
+      <label>Pe ce ai dat banii?</label>
+      <input type="text" id="descInput" placeholder="Ex: Pizza, Benzină, Bilete...">
+    </div>
+
+    <div class="form-group">
+      <label>Sumă (lei)</label>
+      <input type="number" id="amountInput" placeholder="0.00" step="0.01" min="0">
+    </div>
+
+    <div class="form-group">
+      <label>Cine a plătit?</label>
+      <select id="paidBySelect"></select>
+    </div>
+
+    <div class="form-group">
+      <label>Între cine se împarte?</label>
+      <div class="members-list" id="splitWithList"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Anulează</button>
+      <button class="btn-save" onclick="saveExpense()">Salvează</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const urlParams = new URLSearchParams(window.location.search);
+const roomId = urlParams.get('room') || 0;
+let members = [];
+let myUserId = null;
+
+async function api(a, body, qs=''){
+  const opt = body ? {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)} : {};
+  const r = await fetch('../api-split.php?a=' + a + qs, opt);
+  const j = await r.json();
+  if(r.status === 401){ window.location.href = '../'; throw 0; }
+  if(!r.ok) throw j.error || 'Eroare';
+  return j;
+}
+
+async function apiChat(a, qs=''){
+  const r = await fetch('../api.php?a=' + a + qs);
+  return await r.json();
+}
+
+function goBackToChat(){
+  window.location.href = '../';
+}
+
+async function init(){
+  if(!roomId) { alert('Lipsește ID-ul grupului!'); goBackToChat(); return; }
+
+  try {
+    // 1. Aflăm cine suntem
+    const me = await apiChat('me');
+    myUserId = me.id;
+
+    // 2. Aflăm membrii grupului
+    const mList = await apiChat('members', '&room=' + roomId);
+    members = mList;
+
+    // 3. Populăm dropdown-ul "Cine a plătit?"
+    $('#paidBySelect').innerHTML = members.map(m =>
+      `<option value="${m.id}" ${m.id === myUserId ? 'selected' : ''}>${m.username}</option>`
+    ).join('');
+
+    // 4. Populăm lista "Între cine se împarte?" (toți bifați by default)
+    $('#splitWithList').innerHTML = members.map(m =>
+      `<label class="member-check">
+        <input type="checkbox" value="${m.id}" checked> ${m.username}
+      </label>`
+    ).join('');
+
+    // Setează numele grupului
+    const rooms = await apiChat('rooms');
+    const currentRoom = rooms.find(r => r.id == roomId);
+    if(currentRoom) $('#groupName').textContent = currentRoom.name;
+
+    // 5. Încarcă datele
+    loadData();
+
+  } catch(e) {
+    alert('Eroare: ' + e);
+  }
+}
+
+async function loadData(){
+  // Încarcă balanțele
+  const bData = await api('get_balances', 0, '&room=' + roomId);
+  renderBalances(bData);
+
+  // Încarcă istoricul
+  const expData = await api('get_expenses', 0, '&room=' + roomId);
+  renderExpenses(expData);
+}
+
+function renderBalances(data){
+  const box = $('#balancesList');
+  box.innerHTML = '';
+
+  if(data.transactions.length === 0){
+    box.innerHTML = '<div class="balance-row neutral">Toată lumea e la egalitate 🎉</div>';
+    return;
+  }
+
+  data.transactions.forEach(t => {
+    const div = document.createElement('div');
+    if(t.to === myUserId){
+      // Cineva îmi datorează mie
+      div.className = 'balance-row positive';
+      div.innerHTML = `<span>🟢 ${t.from_name} îți datorează</span> <b>${t.amount} lei</b>`;
+    } else if(t.from === myUserId){
+      // Eu datorez cuiva
+      div.className = 'balance-row negative';
+      div.innerHTML = `<span>🔴 Tu îi datorezi lui ${t.to_name}</span> <b>${t.amount} lei</b>`;
+    } else {
+      // Alți oameni între ei
+      div.className = 'balance-row neutral';
+      div.innerHTML = `<span>${t.from_name} îi datorează lui ${t.to_name}</span> <b>${t.amount} lei</b>`;
+    }
+    box.appendChild(div);
+  });
+}
+
+function renderExpenses(data){
+  const box = $('#expensesList');
+  if(data.length === 0){
+    box.innerHTML = '<p style="color:#888;font-size:14px;">Nicio cheltuială înregistrată.</p>';
+    return;
+  }
+
+  box.innerHTML = data.map(e => `
+    <div class="expense-item">
+      <div class="expense-info">
+        <b>${e.description}</b>
+        <span>plătit de ${e.paid_by_name} • ${e.created_at.split(' ')[0]}</span>
+      </div>
+      <div class="expense-amount">${e.amount} lei</div>
+    </div>
+  `).join('');
+}
+
+function openModal(){ $('#addModal').classList.add('on'); }
+function closeModal(){
+  $('#addModal').classList.remove('on');
+  $('#descInput').value = '';
+  $('#amountInput').value = '';
+}
+
+async function saveExpense(){
+  const desc = $('#descInput').value.trim();
+  const amount = parseFloat($('#amountInput').value);
+  const paidBy = parseInt($('#paidBySelect').value);
+
+  const checked = [...document.querySelectorAll('#splitWithList input:checked')].map(i => parseInt(i.value));
+
+  if(!desc || !amount || checked.length === 0){
+    alert('Completează descrierea, suma și cine a beneficiat!');
+    return;
+  }
+
+  try {
+    await api('add_expense', {
+      room_id: roomId,
+      paid_by: paidBy,
+      amount: amount,
+      description: desc,
+      split_with: checked
+    });
+    closeModal();
+    loadData(); // Refresh
+  } catch(e) {
+    alert('Eroare la salvare: ' + e);
+  }
+}
+
+init();
+</script>
+</body>
+</html>

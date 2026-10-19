@@ -1639,7 +1639,8 @@ html[data-pwa="1"] .nc-install-btn{
         </div>
         <button class="ghost" id="srchBtn" title="Caută">🔍</button>
         <button class="ghost" id="expBtn" title="Export">📤</button>
-        <button class="ghost" id="info" title="Membri" hidden>👥</button>
+        <button class="ghost" id="splitBtn" title="Cheltuieli" hidden>💰</button>
+      <button class="ghost" id="info" title="Membri" hidden>👥</button>
         <button class="ghost" id="add" title="Adaugă" hidden>＋</button>
       </header>
       <div id="msgs" style="position:relative">
@@ -1919,6 +1920,7 @@ async function openRoom(r){
   $('#f').hidden=false;
   $('#add').hidden=r.is_group!=1;
   $('#info').hidden=r.is_group!=1;
+  $('#splitBtn').hidden=r.is_group!=1;
   $('#app').classList.add('open');
   $('#rbar').classList.remove('on');
   updateInputVisibility();
@@ -3696,6 +3698,20 @@ function updateSidebarDrafts(){
     if(btn){ btn.style.display = 'none'; btn.remove(); }
   } else {
     console.log('[PWA] Rulează în browser normal');
+  }
+})();
+
+
+// ========== SPLIT BILL BUTTON ==========
+(function(){
+  var splitBtn = document.getElementById('splitBtn');
+  if(splitBtn){
+    splitBtn.onclick = function(){
+      if(!room || !room.id) return;
+      // Deschide pagina split în tab nou (păstrează chat-ul deschis)
+      window.open('/split/?room=' + room.id, '_blank');
+    };
+    console.log('[SPLIT] Buton handler activat');
   }
 })();
 
