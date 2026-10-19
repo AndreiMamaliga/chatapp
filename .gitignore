@@ -33,3 +33,11 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Electron build (fișiere mari)
+electron/node_modules/
+electron/dist/
+electron/package-lock.json
+
+# Download-uri (fișiere .exe mari)
+html/download/
