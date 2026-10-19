@@ -31,7 +31,7 @@ switch($a){
 case 'me':
  out(q('SELECT id,username FROM users WHERE id=?',[$uid])->fetch());
 case 'rooms':
- $rows=q('SELECT r.id,r.is_group,r.is_self,r.name,
+ $rows=q('SELECT r.id,r.is_group,r.is_self,r.created_by,r.name,
   (SELECT m.body FROM messages m WHERE m.room_id=r.id AND m.deleted=0 ORDER BY m.id DESC LIMIT 1) lastmsg,
   (SELECT m.created_at FROM messages m WHERE m.room_id=r.id AND m.deleted=0 ORDER BY m.id DESC LIMIT 1) lasttime,
   (SELECT MAX(m.id) FROM messages m WHERE m.room_id=r.id) last_id,
@@ -65,7 +65,7 @@ case 'add':
  q('INSERT IGNORE INTO room_members(room_id,user_id) VALUES(?,?)',[$r,$i]);out(['ok'=>1]);
 case 'members':
  $r=(int)($_GET['room']??0);if(!member($r))out(['error'=>'Interzis'],403);
- out(q('SELECT u.id,u.username,u.last_seen>NOW()-INTERVAL 30 SECOND online FROM room_members x JOIN users u ON u.id=x.user_id WHERE x.room_id=? ORDER BY online DESC,u.username',[$r])->fetchAll());
+ out(q('SELECT u.id,u.username,u.last_seen>NOW()-INTERVAL 30 SECOND online, IF(r.created_by=u.id,1,0) is_admin FROM room_members x JOIN users u ON u.id=x.user_id JOIN rooms r ON r.id=x.room_id WHERE x.room_id=? ORDER BY is_admin DESC, online DESC,u.username',[$r])->fetchAll());
 case 'msgs':
  $r=(int)($_GET['room']??0);if(!member($r))out(['error'=>'Interzis'],403);
  $ms=q('SELECT * FROM (SELECT m.id,m.user_id,u.username,m.body,m.type,m.file_url,m.file_name,m.created_at,m.edited,m.deleted,m.reply_id,m.pinned,m.view_once,(SELECT COUNT(*) FROM room_members x WHERE x.room_id=m.room_id AND x.user_id<>m.user_id AND x.last_read>=m.id) read_by,(SELECT COUNT(*) FROM room_members x WHERE x.room_id=m.room_id AND x.user_id<>m.user_id) others_total,rm.body reply_body,ru.username reply_user,

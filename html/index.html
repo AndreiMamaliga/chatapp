@@ -2421,8 +2421,9 @@ $('#info').onclick=async()=>{
     const row = document.createElement('div');
     row.className = 'u';
     row.style.cssText = 'cursor:pointer';
+    const adminBadge = u.is_admin == 1 ? ' <span style="font-size:12px" title="Admin">👑</span>' : '';
     row.innerHTML = '<div class="av sm" style="background:linear-gradient(135deg,'+c+','+c+'cc)">'+u.username[0].toUpperCase()+'</div>'
-      + '<span style="flex:1">'+u.username+'</span>'
+      + '<span style="flex:1">'+u.username + adminBadge + '</span>'
       + (u.online ? '<span style="color:var(--success);font-size:11px;font-weight:600;text-shadow:0 0 10px var(--success)">● online</span>' : '');
     row.onclick = function(){
       document.getElementById('infoDlg').close();
