@@ -167,6 +167,30 @@ input[type="checkbox"]:checked::after{
 .toast.success { border-color: var(--success); box-shadow: 0 4px 12px rgba(35,190,126,0.2); }
 @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+
+/* TABS */
+.tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--theme-bg); flex-shrink: 0; }
+.tab-btn { flex: 1; padding: 14px; background: transparent; border: 0; border-bottom: 2px solid transparent; color: #888; font-weight: 700; font-size: 14px; cursor: pointer; transition: all .2s; font-family: var(--body-font); }
+.tab-btn.active { color: var(--theme-color); border-bottom-color: var(--theme-color); }
+.tab-btn:hover { background: rgba(255,255,255,0.02); }
+
+/* STATS */
+#tabStats { display: none; flex: 1; overflow-y: auto; padding: 20px; flex-direction: column; gap: 16px; }
+.stat-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
+.stat-row { display: flex; gap: 16px; }
+.stat-row .stat-card { flex: 1; text-align: center; }
+.stat-val { font-size: 24px; font-weight: 800; color: #fff; margin-top: 4px; }
+.stat-lbl { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+.lb-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.lb-item:last-child { border-bottom: 0; }
+.lb-rank { width: 24px; font-weight: 800; color: var(--theme-color); font-size: 16px; text-align: center; }
+.lb-name { flex: 1; color: #fff; font-weight: 600; }
+.lb-amt { color: var(--success); font-weight: 700; font-size: 14px; }
+.cat-bar-wrap { margin-bottom: 12px; }
+.cat-bar-lbl { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; color: #ccc; }
+.cat-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+.cat-bar-fill { height: 100%; background: linear-gradient(90deg, var(--theme-color), var(--accent)); border-radius: 4px; }
+
 </style>
 </head>
 <body>
@@ -179,14 +203,41 @@ input[type="checkbox"]:checked::after{
     </div>
   </div>
 
-  <div class="summary" id="summaryCard">
-    <h3 data-i18n="summary">Rezumat datorii</h3>
-    <div id="balancesList" data-i18n="calculating">Se calculează...</div>
+  <div class="tabs">
+    <button class="tab-btn active" id="btnTabExpenses" onclick="switchTab('expenses')" data-i18n="tab_expenses">💸 Cheltuieli</button>
+    <button class="tab-btn" id="btnTabStats" onclick="switchTab('stats')" data-i18n="tab_stats">📊 Statistici</button>
   </div>
 
-  <div class="expenses">
-    <h3 data-i18n="history">Istoric cheltuieli</h3>
-    <div id="expensesList"></div>
+  <div id="tabExpenses" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+    <div class="summary" id="summaryCard">
+      <h3 data-i18n="summary">Rezumat datorii</h3>
+      <div id="balancesList" data-i18n="calculating">Se calculează...</div>
+    </div>
+    <div class="expenses" style="flex:1;overflow-y:auto">
+      <h3 data-i18n="history">Istoric cheltuieli</h3>
+      <div id="expensesList"></div>
+    </div>
+  </div>
+
+  <div id="tabStats">
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-lbl" data-i18n="stat_total">Total cheltuit</div>
+        <div class="stat-val" id="statTotal">0 MDL</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl" data-i18n="stat_avg">Medie / persoană</div>
+        <div class="stat-val" id="statAvg">0 MDL</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl" data-i18n="stat_leaderboard" style="margin-bottom:12px">Cine a plătit cel mai mult</div>
+      <div id="statLeaderboard"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl" data-i18n="stat_categories" style="margin-bottom:12px">Pe categorii</div>
+      <div id="statCategories"></div>
+    </div>
   </div>
 
   <button class="fab" onclick="openModal()">+</button>
@@ -282,6 +333,13 @@ var TRANSLATIONS = {
     cat_fun: '🎉 Distracție',
     cat_shopping: '🛒 Cumpărături',
     cat_other: '📦 Altele',
+    tab_expenses: '💸 Cheltuieli',
+    tab_stats: '📊 Statistici',
+    stat_total: 'Total cheltuit',
+    stat_avg: 'Medie / persoană',
+    stat_leaderboard: 'Cine a plătit cel mai mult',
+    stat_categories: 'Pe categorii',
+    no_data: 'Nu sunt date încă',
     desc_placeholder: 'Ex: Pizza, Benzină, Bilete...',
     currency: 'MDL',
   },
@@ -321,6 +379,13 @@ var TRANSLATIONS = {
     cat_fun: '🎉 Развлечения',
     cat_shopping: '🛒 Покупки',
     cat_other: '📦 Другое',
+    tab_expenses: '💸 Расходы',
+    tab_stats: '📊 Статистика',
+    stat_total: 'Всего потрачено',
+    stat_avg: 'Среднее / чел.',
+    stat_leaderboard: 'Кто больше всех платил',
+    stat_categories: 'По категориям',
+    no_data: 'Пока нет данных',
     currency: 'MDL',
   }
 };
@@ -543,6 +608,68 @@ async function saveExpense(){
 applyTranslations();
 
 
+
+
+// ========== TABS & STATS ==========
+function switchTab(tab) {
+  var exp = document.getElementById('tabExpenses');
+  var stats = document.getElementById('tabStats');
+  var btnExp = document.getElementById('btnTabExpenses');
+  var btnStats = document.getElementById('btnTabStats');
+  if(!exp || !stats) return;
+
+  if(tab === 'expenses'){
+    exp.style.display = 'flex';
+    stats.style.display = 'none';
+    if(btnExp) btnExp.classList.add('active');
+    if(btnStats) btnStats.classList.remove('active');
+  } else {
+    exp.style.display = 'none';
+    stats.style.display = 'flex';
+    if(btnExp) btnExp.classList.remove('active');
+    if(btnStats) btnStats.classList.add('active');
+    loadStats();
+  }
+}
+
+async function loadStats() {
+  try {
+    var data = await api('get_stats', 0, '&room=' + roomId);
+
+    document.getElementById('statTotal').textContent = parseFloat(data.total).toFixed(2) + ' ' + t('currency');
+    document.getElementById('statAvg').textContent = parseFloat(data.avg).toFixed(2) + ' ' + t('currency');
+
+    var lbBox = document.getElementById('statLeaderboard');
+    if(!data.leaderboard || data.leaderboard.length === 0) {
+      lbBox.innerHTML = '<div style="color:#888;font-size:13px;text-align:center">' + t('no_data') + '</div>';
+    } else {
+      lbBox.innerHTML = data.leaderboard.map(function(u, i){
+        return '<div class="lb-item">'
+          + '<div class="lb-rank">#' + (i+1) + '</div>'
+          + '<div class="lb-name">' + u.username + '</div>'
+          + '<div class="lb-amt">' + parseFloat(u.total).toFixed(2) + ' ' + t('currency') + '</div>'
+          + '</div>';
+      }).join('');
+    }
+
+    var catBox = document.getElementById('statCategories');
+    if(!data.categories || data.categories.length === 0) {
+      catBox.innerHTML = '<div style="color:#888;font-size:13px;text-align:center">' + t('no_data') + '</div>';
+    } else {
+      var maxVal = Math.max.apply(null, data.categories.map(function(c){ return parseFloat(c.total); }));
+      catBox.innerHTML = data.categories.map(function(c){
+        var pct = maxVal > 0 ? (parseFloat(c.total) / maxVal) * 100 : 0;
+        var catLabel = t('cat_' + c.category) || c.category;
+        return '<div class="cat-bar-wrap">'
+          + '<div class="cat-bar-lbl"><span>' + catLabel + '</span><span>' + parseFloat(c.total).toFixed(2) + ' ' + t('currency') + '</span></div>'
+          + '<div class="cat-bar"><div class="cat-bar-fill" style="width:' + pct + '%"></div></div>'
+          + '</div>';
+      }).join('');
+    }
+  } catch(e) {
+    console.error('[STATS] Eroare:', e);
+  }
+}
 
 init();
 

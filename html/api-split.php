@@ -56,6 +56,25 @@ case 'settle_up':
  q('INSERT INTO messages(room_id,user_id,body,type) VALUES(?,?,?,?)',[$r,$uid,"💸 $from_name a decontat $amount MDL către $to_name","text"]);
 
  out(['ok'=>1]);
+case 'get_stats':
+ $r=(int)($_GET['room']??0);
+ if(!member($r))out(['error'=>'Interzis'],403);
+
+ // Total
+ $total=(float)q('SELECT SUM(amount) FROM expenses WHERE room_id=?',[$r])->fetchColumn() ?: 0;
+
+ // Membri
+ $members=(int)q('SELECT COUNT(*) FROM room_members WHERE room_id=?',[$r])->fetchColumn();
+ $avg = $members > 0 ? $total / $members : 0;
+
+ // Leaderboard (Cine a platit cel mai mult)
+ $leaderboard=q('SELECT u.username, SUM(e.amount) as total FROM expenses e JOIN users u ON u.id=e.paid_by WHERE e.room_id=? GROUP BY e.paid_by ORDER BY total DESC LIMIT 10',[$r])->fetchAll();
+
+ // Categorii
+ $categories=q('SELECT category, SUM(amount) as total FROM expenses WHERE room_id=? GROUP BY category ORDER BY total DESC',[$r])->fetchAll();
+
+ out(['total'=>$total, 'avg'=>$avg, 'leaderboard'=>$leaderboard, 'categories'=>$categories]);
+
 case 'get_expenses':
  $r=(int)($_GET['room']??0);
  if(!member($r))out(['error'=>'Interzis'],403);
