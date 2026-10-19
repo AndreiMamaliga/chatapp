@@ -78,7 +78,7 @@ case 'get_stats':
 case 'get_expenses':
  $r=(int)($_GET['room']??0);
  if(!member($r))out(['error'=>'Interzis'],403);
- $ms=q('SELECT e.id,e.amount,e.description,e.category,e.created_at,u.username as paid_by_name FROM expenses e JOIN users u ON u.id=e.paid_by WHERE e.room_id=? ORDER BY e.id DESC',[$r])->fetchAll();
+ $ms=q('SELECT e.id, e.paid_by, e.amount, e.description, e.category, e.created_at, u.username as paid_by_name, (SELECT GROUP_CONCAT(user_id) FROM expense_splits x WHERE x.expense_id=e.id) as split_with FROM expenses e JOIN users u ON u.id=e.paid_by WHERE e.room_id=? ORDER BY e.id DESC',[$r])->fetchAll();
  out($ms);
 
 case 'get_balances':
@@ -133,5 +133,30 @@ case 'get_balances':
  }
 
  out(['balances'=>$balances, 'transactions'=>$transactions]);
+case 'delete_expense':
+ $id=(int)($in['id']??0);
+ $m=q('SELECT room_id,paid_by FROM expenses WHERE id=?',[$id])->fetch();
+ if(!$m||!member($m['room_id']))out(['error'=>'Interzis'],403);
+ // Doar cel care a platit sau adminul poate sterge. Aici lasam doar platitorul.
+ if($m['paid_by']!=$uid)out(['error'=>'Doar cel care a platit poate sterge'],403);
+ q('DELETE FROM expenses WHERE id=?',[$id]);
+ out(['ok'=>1]);
+
+case 'edit_expense':
+ $id=(int)($in['id']??0);
+ $amount=(float)($in['amount']??0);
+ $desc=trim($in['description']??'');
+ $cat=trim($in['category']??'other');
+ $split_with=(array)($in['split_with']??[]);
+ $m=q('SELECT room_id,paid_by FROM expenses WHERE id=?',[$id])->fetch();
+ if(!$m||!member($m['room_id'])||$m['paid_by']!=$uid)out(['error'=>'Interzis'],403);
+ if(!$amount||!$desc||empty($split_with))out(['error'=>'Date invalide'],400);
+
+ q('UPDATE expenses SET amount=?,description=?,category=? WHERE id=?',[$amount,$desc,$cat,$id]);
+ q('DELETE FROM expense_splits WHERE expense_id=?',[$id]);
+ $per_person=round($amount / count($split_with), 2);
+ foreach($split_with as $u){ q('INSERT INTO expense_splits(expense_id,user_id,amount_owed) VALUES(?,?,?)',[$id,$u,$per_person]); }
+ out(['ok'=>1]);
+
 }
 out(['error'=>'unknown'],404);

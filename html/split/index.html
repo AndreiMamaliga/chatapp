@@ -191,6 +191,18 @@ input[type="checkbox"]:checked::after{
 .cat-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
 .cat-bar-fill { height: 100%; background: linear-gradient(90deg, var(--theme-color), var(--accent)); border-radius: 4px; }
 
+
+.expense-actions { display: flex; gap: 5px; margin-left: 10px; }
+.expense-btn {
+  background: rgba(255,255,255,0.05); border: 0; color: #888;
+  width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+  transition: all .2s;
+}
+.expense-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.expense-btn.delete:hover { background: rgba(255,66,102,0.2); color: var(--danger); }
+.expense-btn.edit:hover { background: rgba(0,134,255,0.2); color: var(--theme-color); }
+
 </style>
 </head>
 <body>
@@ -246,7 +258,7 @@ input[type="checkbox"]:checked::after{
 <!-- MODAL ADAUGARE CHELTUIALA -->
 <div class="modal" id="addModal">
   <div class="modal-content">
-    <h2 data-i18n="add_expense">💰 Adaugă Cheltuială</h2>
+    <h2 id="modalTitle" data-i18n="add_expense">💰 Adaugă Cheltuială</h2>
 
     <div class="form-group">
       <label data-i18n="what_for">Pe ce ai dat banii?</label>
@@ -282,7 +294,7 @@ input[type="checkbox"]:checked::after{
     </div>
 
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()" data-i18n="cancel">Anulează</button>
+      <button class="btn-cancel" id="btnCancelModal" data-i18n="cancel">Anulează</button>
       <button class="btn-save" onclick="saveExpense()" data-i18n="save">Salvează</button>
     </div>
   </div>
@@ -293,6 +305,7 @@ const $ = s => document.querySelector(s);
 const urlParams = new URLSearchParams(window.location.search);
 const roomId = urlParams.get('room') || 0;
 let members = [];
+let editingExpenseId = null;
 let myUserId = null;
 
 // ========== i18n SYSTEM ==========
@@ -340,6 +353,10 @@ var TRANSLATIONS = {
     stat_leaderboard: 'Cine a plătit cel mai mult',
     stat_categories: 'Pe categorii',
     no_data: 'Nu sunt date încă',
+    edit_title: '✏️ Editează Cheltuiala',
+    delete_confirm: 'Sigur vrei să ștergi această cheltuială?',
+    deleted_ok: '✅ Cheltuială ștearsă',
+    updated_ok: '✅ Cheltuială actualizată',
     desc_placeholder: 'Ex: Pizza, Benzină, Bilete...',
     currency: 'MDL',
   },
@@ -386,6 +403,10 @@ var TRANSLATIONS = {
     stat_leaderboard: 'Кто больше всех платил',
     stat_categories: 'По категориям',
     no_data: 'Пока нет данных',
+    edit_title: '✏️ Редактировать расход',
+    delete_confirm: 'Вы уверены, что хотите удалить этот расход?',
+    deleted_ok: '✅ Расход удален',
+    updated_ok: '✅ Расход обновлен',
     currency: 'MDL',
   }
 };
@@ -553,36 +574,75 @@ function renderBalances(data){
 }
 
 function renderExpenses(data){
-  const box = $('#expensesList');
+  var box = $('#expensesList');
   if(data.length === 0){
     box.innerHTML = '<p style="color:#888;font-size:14px;">' + t('no_expenses') + '</p>';
     return;
   }
 
-  box.innerHTML = data.map(e => `
-    <div class="expense-item">
-      <div class="expense-info">
-        <b>${getCatIcon(e.category)} ${e.description}</b>
-        <span>${t('paid_by')} ${e.paid_by_name} • ${e.created_at.split(' ')[0]}</span>
-      </div>
-      <div class="expense-amount">${e.amount} MDL</div>
-    </div>
-  `).join('');
+  box.innerHTML = data.map(function(e){
+    var actionsHtml = '';
+    if(e.paid_by == myUserId) {
+      actionsHtml = '<div class="expense-actions">'
+        + '<button class="expense-btn edit" onclick="editExpense(' + e.id + ')" title="Editează">✏️</button>'
+        + '<button class="expense-btn delete" onclick="deleteExpense(' + e.id + ')" title="Șterge">🗑️</button>'
+        + '</div>';
+    }
+    return '<div class="expense-item">'
+      + '<div class="expense-info">'
+      + '<b>' + getCatIcon(e.category) + ' ' + e.description + '</b>'
+      + '<span>' + t('paid_by') + ' ' + e.paid_by_name + ' • ' + e.created_at.split(' ')[0] + '</span>'
+      + '</div>'
+      + '<div style="display:flex;align-items:center">'
+      + '<div class="expense-amount">' + e.amount + ' ' + t('currency') + '</div>'
+      + actionsHtml
+      + '</div></div>';
+  }).join('');
 }
 
-function openModal(){ $('#addModal').classList.add('on'); }
-function closeModal(){
-  $('#addModal').classList.remove('on');
-  $('#descInput').value = '';
-  $('#amountInput').value = '';
+
+function deleteExpense(id) {
+  customConfirm(t('delete_confirm')).then(function(confirmed) {
+    if(!confirmed) return;
+    api('delete_expense', { id: id }).then(function() {
+      showToast(t('deleted_ok'));
+      loadData();
+    }).catch(function(err){ showToast('❌ ' + err); });
+  });
+}
+
+function editExpense(id) {
+  api('get_expenses', 0, '&room=' + roomId).then(function(data) {
+    var e = data.find(function(x){ return x.id == id; });
+    if(!e) return;
+    editingExpenseId = id;
+    document.getElementById('modalTitle').textContent = t('edit_title');
+    document.getElementById('descInput').value = e.description;
+    document.getElementById('amountInput').value = e.amount;
+    document.getElementById('catSelect').value = e.category || 'other';
+    var splitIds = e.split_with ? e.split_with.split(',').map(Number) : [];
+    document.querySelectorAll('#splitWithList input').forEach(function(cb){
+      cb.checked = splitIds.indexOf(parseInt(cb.value)) >= 0;
+    });
+    $('#addModal').classList.add('on');
+  });
+}
+
+function openModal(){
+  editingExpenseId = null;
+  document.getElementById('modalTitle').textContent = t('add_expense');
+  document.getElementById('descInput').value = '';
+  document.getElementById('amountInput').value = '';
+  document.getElementById('catSelect').value = 'other';
+  document.querySelectorAll('#splitWithList input').forEach(function(cb){ cb.checked = true; });
+  $('#addModal').classList.add('on');
 }
 
 async function saveExpense(){
-  const desc = $('#descInput').value.trim();
-  const amount = parseFloat($('#amountInput').value);
-  const paidBy = parseInt($('#paidBySelect').value);
-
-  const checked = [...document.querySelectorAll('#splitWithList input:checked')].map(i => parseInt(i.value));
+  var desc = $('#descInput').value.trim();
+  var amount = parseFloat($('#amountInput').value);
+  var paidBy = parseInt($('#paidBySelect').value);
+  var checked = [].slice.call(document.querySelectorAll('#splitWithList input:checked')).map(function(i){ return parseInt(i.value); });
 
   if(!desc || !amount || checked.length === 0){
     alert(t('fill_all'));
@@ -590,16 +650,27 @@ async function saveExpense(){
   }
 
   try {
-    await api('add_expense', {
-      room_id: roomId,
-      paid_by: paidBy,
-      amount: amount,
-      description: desc,
-      category: document.getElementById('catSelect').value,
-      split_with: checked
-    });
+    if(editingExpenseId) {
+      await api('edit_expense', {
+        id: editingExpenseId,
+        amount: amount,
+        description: desc,
+        category: document.getElementById('catSelect').value,
+        split_with: checked
+      });
+      showToast(t('updated_ok'));
+    } else {
+      await api('add_expense', {
+        room_id: roomId,
+        paid_by: paidBy,
+        amount: amount,
+        description: desc,
+        category: document.getElementById('catSelect').value,
+        split_with: checked
+      });
+    }
     closeModal();
-    loadData(); // Refresh
+    loadData();
   } catch(e) {
     alert(t('save_error') + ' ' + e);
   }
@@ -670,6 +741,33 @@ async function loadStats() {
     console.error('[STATS] Eroare:', e);
   }
 }
+
+
+// ========== FIX CANCEL MODAL ==========
+function closeModal(){
+  var modal = $('#addModal');
+  if(modal) modal.classList.remove('on');
+
+  // Resetăm starea de editare
+  editingExpenseId = null;
+
+  // Golim câmpurile
+  var desc = $('#descInput');
+  var amount = $('#amountInput');
+  if(desc) desc.value = '';
+  if(amount) amount.value = '';
+}
+
+// Atașăm evenimentul pe buton (când se încarcă pagina)
+document.addEventListener('DOMContentLoaded', function(){
+  var btn = document.getElementById('btnCancelModal');
+  if(btn){
+    btn.onclick = function(e){
+      e.preventDefault();
+      closeModal();
+    };
+  }
+});
 
 init();
 
