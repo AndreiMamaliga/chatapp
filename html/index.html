@@ -1717,6 +1717,138 @@ html[data-theme="rose"] {
 }
 .theme-preview-dot { width: 10px; height: 10px; border-radius: 50%; }
 
+
+/* MENIU EXTINS (sub butonul +) */
+.more-tools {
+  position: absolute;
+  bottom: 100%;
+  left: 12px;
+  background: var(--theme-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 10px;
+  display: none;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  margin-bottom: 8px;
+  z-index: 100;
+  align-items: center;
+}
+.more-tools.on {
+  display: flex;
+  animation: fadeInUp 0.2s ease-out;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.more-tools .ico {
+  font-size: 22px;
+  padding: 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.more-tools .ico:hover {
+  background: var(--theme-color);
+  color: #fff;
+  transform: scale(1.1);
+}
+#moreBtn {
+  transition: transform 0.3s ease;
+}
+#moreBtn.active {
+  transform: rotate(45deg);
+  background: rgba(255,255,255,0.1);
+  color: var(--theme-color);
+}
+
+
+/* Topbar Cleanup */
+.nc-brand { display: none !important; }
+.nc-logo { cursor: pointer; transition: transform 0.2s; }
+.nc-logo:hover { transform: scale(1.1); }
+.nc-search { flex: 1 !important; max-width: 600px !important; margin: 0 20px !important; }
+.nc-user { gap: 8px !important; }
+.nc-avatar { width: 34px !important; height: 34px !important; font-size: 14px !important; margin-left: 4px; }
+.nc-install-btn {
+  padding: 0 !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  justify-content: center !important;
+}
+.nc-install-btn span { display: none !important; } /* Ascundem textul "Instalează", rămâne doar iconița */
+
+/* Stil pentru butonul de Ieși din Profil */
+.btn-logout {
+  width: 100%;
+  padding: 14px;
+  background: rgba(255, 66, 102, 0.1);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-logout:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+
+/* Ascunde bara de căutare veche din sidebar */
+#side > .tools:has(#sq) { display: none !important; }
+#side > .tools > #sq { display: none !important; }
+
+
+.room { padding: 16px 20px !important; margin-bottom: 2px !important; }
+.room .av { width: 48px !important; height: 48px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important; }
+.room-info b { font-size: 15px !important; font-weight: 600 !important; }
+.room-info small { font-size: 13px !important; margin-top: 4px !important; }
+
+
+/* CUSTOM CONFIRM MODAL (Chat) */
+.nc-confirm-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+  display: none; align-items: center; justify-content: center;
+  z-index: 99999; backdrop-filter: blur(4px);
+}
+.nc-confirm-modal.on { display: flex; }
+.nc-confirm-content {
+  background: var(--theme-bg-color); padding: 24px; border-radius: 16px;
+  border: 1px solid var(--border-color); width: 90%; max-width: 360px;
+  text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  animation: ncPopIn .2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes ncPopIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.nc-confirm-content h3 { color: #fff; font-size: 18px; margin-bottom: 10px; }
+.nc-confirm-content p { color: #888; font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+.nc-confirm-actions { display: flex; gap: 10px; justify-content: center; }
+.nc-confirm-actions button {
+  padding: 10px 20px; border-radius: 10px; font-weight: 700;
+  cursor: pointer; border: none; font-size: 14px; font-family: inherit; flex: 1;
+}
+.nc-confirm-actions .btn-cancel {
+  background: rgba(255,255,255,0.05); color: var(--body-color); border: 1px solid var(--border-color);
+}
+.nc-confirm-actions .btn-confirm {
+  background: linear-gradient(135deg, var(--danger, #ff4266), #cc0033);
+  color: white;
+}
+
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0086ff">
@@ -1754,7 +1886,7 @@ html[data-theme="rose"] {
   <div class="nc-logo">
     <svg viewBox="0 0 513 513" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M256.025.05C117.67-2.678 3.184 107.038.025 245.383a240.703 240.703 0 0085.333 182.613v73.387c0 5.891 4.776 10.667 10.667 10.667a10.67 10.67 0 005.653-1.621l59.456-37.141a264.142 264.142 0 0094.891 17.429c138.355 2.728 252.841-106.988 256-245.333C508.866 107.038 394.38-2.678 256.025.05z"/><path d="M330.518 131.099l-213.825 130.08c-7.387 4.494-5.74 15.711 2.656 17.97l72.009 19.374a9.88 9.88 0 007.703-1.094l32.882-20.003-10.113 37.136a9.88 9.88 0 001.083 7.704l38.561 63.826c4.488 7.427 15.726 5.936 18.003-2.425l65.764-241.49c2.337-8.582-7.092-15.72-14.723-11.078z" fill="#fff"/></svg>
   </div>
-  <div class="nc-brand">NeonChat</div>
+  <!-- Brand text removed for clean UI -->
   <div class="nc-search">
     <input type="text" id="ncSearch" placeholder="Caută conversații...">
   </div>
@@ -1829,12 +1961,18 @@ html[data-theme="rose"] {
       </div>
       <div id="emojis"></div>
       <form id="f" hidden>
+        <!-- Meniu ascuns cu unelte extra -->
+        <div id="moreTools" class="more-tools">
+          <button type="button" class="ico" id="voiceBtn" title="Voice">🎙️</button>
+          <button type="button" class="ico" id="pollBtn" title="Sondaj">📊</button>
+          <button type="button" class="ico" id="quickSplitBtn" title="Cheltuială rapidă">💸</button>
+          <button type="button" class="ico" id="voBtn" title="Mesaj efemer">👁️</button>
+        </div>
+
         <button type="button" class="ico" id="fileBtn" title="Fișier">📎</button>
         <button type="button" class="ico" id="emoBtn" title="Emoji">😊</button>
-        <button type="button" class="ico" id="voiceBtn" title="Voice">🎙️</button>
-        <button type="button" class="ico" id="pollBtn" title="Sondaj">📊</button>
-        <button type="button" class="ico" id="quickSplitBtn" title="Adaugă cheltuială rapidă">💸</button>
-        <button type="button" class="ico" id="voBtn" title="Mesaj efemer">👁️</button>
+        <button type="button" class="ico" id="moreBtn" title="Mai multe opțiuni">➕</button>
+
         <textarea id="t" placeholder="Scrie un mesaj..." autocomplete="off" rows="1"></textarea>
         <button class="send" type="submit">➤</button>
       </form>
@@ -1867,6 +2005,10 @@ html[data-theme="rose"] {
       <textarea id="editBio" placeholder="Scrie ceva despre tine..." maxlength="300" rows="3"></textarea>
     </div>
     <button class="profile-save" id="saveProf" type="button">💾 Salvează</button>
+    <button class="btn-logout" id="btnLogoutProfile" type="button">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      Ieși din cont
+    </button>
     <div class="p-card" style="margin-top:16px">
       <label>🎨 Temă / Тема</label>
       <div class="theme-grid" id="themeGrid"></div>
@@ -4346,6 +4488,165 @@ window.applyRoomBg = function(bg){
   console.log('[BG v3] Handlers active');
 })();
 
+
+// ========== MENIU EXTINS (+) ==========
+(function(){
+  var moreBtn = document.getElementById('moreBtn');
+  var moreTools = document.getElementById('moreTools');
+  if(!moreBtn || !moreTools) return;
+
+  moreBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    var isOpen = moreTools.classList.contains('on');
+    moreTools.classList.toggle('on');
+    moreBtn.classList.toggle('active');
+
+    // Închidem picker-ul de emoji dacă era deschis
+    if(!isOpen) {
+      var emojis = document.getElementById('emojis');
+      if(emojis) emojis.classList.remove('on');
+    }
+  });
+
+  // Închidem meniul dacă dăm click în altă parte
+  document.addEventListener('click', function(e){
+    if(!e.target.closest('#moreTools') && !e.target.closest('#moreBtn')){
+      moreTools.classList.remove('on');
+      moreBtn.classList.remove('active');
+    }
+  });
+
+  // Închidem meniul când deschidem emoji
+  var emoBtn = document.getElementById('emoBtn');
+  if(emoBtn) {
+    emoBtn.addEventListener('click', function(){
+      moreTools.classList.remove('on');
+      moreBtn.classList.remove('active');
+    });
+  }
+})();
+
+
+// ========== UI STEP 2 BINDINGS ==========
+(function(){
+  // 1. Click pe Logo = Revino la ecranul principal (Home)
+  var logo = document.querySelector('.nc-logo');
+  if(logo){
+    logo.onclick = function(){
+      // Resetăm starea camerei
+      room = null;
+
+      // Închidem conversația (pe mobil)
+      document.getElementById('app').classList.remove('open');
+
+      // Resetăm ecranul de chat
+      document.getElementById('msgs').innerHTML = '<div id="empty"><div class="big">💬</div><h3>Bine ai venit!</h3>Alege o conversație<br><small>sau începe una nouă</small></div>';
+      document.getElementById('title').textContent = 'Alege o conversație';
+      document.getElementById('sub').textContent = '';
+      document.getElementById('f').hidden = true;
+
+      // Deselectăm toate camerele din sidebar
+      document.querySelectorAll('.room').forEach(function(r){ r.classList.remove('on'); });
+
+      // Ascundem input-ul dacă funcția există
+      if(typeof updateInputVisibility === 'function') updateInputVisibility();
+
+      console.log('[UI] Logo clicked -> Home screen');
+    };
+  }
+
+  // 2. Logout din Profil (FIXAT)
+  var btnLogout = document.getElementById('btnLogoutProfile');
+  if(btnLogout){
+    btnLogout.onclick = async function(){
+      if(!confirm('Sigur vrei să ieși din cont?')) return;
+
+      try { await api('logout', {}); } catch(e){ console.log('Logout error:', e); }
+
+      // Închidem fereastra de profil
+      var profileModal = document.getElementById('profile');
+      if(profileModal) profileModal.classList.remove('on');
+
+      // Închidem orice dialog deschis
+      document.querySelectorAll('dialog').forEach(function(d){ d.close(); });
+
+      // Resetăm starea aplicației
+      room = null;
+      document.body.classList.remove('nc-logged'); // Ascunde topbar-ul
+
+      var app = document.getElementById('app');
+      if(app) app.classList.remove('on');
+
+      var authEl = document.getElementById('auth');
+      if(authEl) authEl.style.display = 'grid';
+
+      if(typeof timer !== 'undefined' && timer) clearInterval(timer);
+      if(typeof toast === 'function') toast('👋 La revedere!', 'ok', 1500);
+    };
+  }
+
+  // 3. Ascundem vechiul buton de logout dacă mai există în DOM
+  var oldOut = document.getElementById('ncOut');
+  if(oldOut) oldOut.style.display = 'none';
+})();
+
+
+// ========== CUSTOM LOGOUT CONFIRM ==========
+let ncConfirmResolve = null;
+
+function ncConfirm(msg) {
+  return new Promise((resolve) => {
+    ncConfirmResolve = resolve;
+    document.getElementById('ncConfirmMsg').textContent = msg;
+    document.getElementById('ncConfirmModal').classList.add('on');
+  });
+}
+
+function ncCloseConfirm(val) {
+  document.getElementById('ncConfirmModal').classList.remove('on');
+  if(ncConfirmResolve) {
+    ncConfirmResolve(val);
+    ncConfirmResolve = null;
+  }
+}
+
+// Modificăm handler-ul de Logout ca să folosească noul modal
+(function(){
+  function attachLogout(){
+    var btn = document.getElementById('btnLogoutProfile');
+    if(btn && !btn._customBound){
+      btn._customBound = true;
+      btn.onclick = async function(){
+        const isConfirmed = await ncConfirm('Sigur vrei să ieși din cont?');
+        if(!isConfirmed) return;
+
+        try { await api('logout', {}); } catch(e){}
+
+        var profileModal = document.getElementById('profile');
+        if(profileModal) profileModal.classList.remove('on');
+        document.querySelectorAll('dialog').forEach(d => d.close());
+
+        room = null;
+        document.body.classList.remove('nc-logged');
+
+        var app = document.getElementById('app');
+        if(app) app.classList.remove('on');
+
+        var authEl = document.getElementById('auth');
+        if(authEl) authEl.style.display = 'grid';
+
+        if(typeof timer !== 'undefined' && timer) clearInterval(timer);
+        if(typeof toast === 'function') toast('👋 La revedere!', 'ok', 1500);
+      };
+    }
+  }
+
+  setTimeout(attachLogout, 500);
+  setTimeout(attachLogout, 1500);
+  setTimeout(attachLogout, 3000);
+})();
+
 enter().catch(auth);
 
 // ========== SERVICE WORKER (PWA) ==========
@@ -4443,6 +4744,24 @@ if('serviceWorker' in navigator){
     <button type="button" id="bgSave" style="padding:10px 24px;background:linear-gradient(135deg,var(--theme-color),var(--theme-color-2));color:#fff;border:0;border-radius:10px;font-weight:700;cursor:pointer">Salvează</button>
   </div>
 </dialog>
+
+
+<!-- CUSTOM LOGOUT CONFIRM -->
+<div id="ncConfirmModal" class="nc-confirm-modal">
+  <div class="nc-confirm-content">
+    <div style="margin-bottom:16px; color:var(--danger,#ff4266); display:flex; justify-content:center;">
+      <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+      </svg>
+    </div>
+    <h3>Ieși din cont?</h3>
+    <p id="ncConfirmMsg">Ești sigur că vrei să te deconectezi?</p>
+    <div class="nc-confirm-actions">
+      <button class="btn-cancel" onclick="ncCloseConfirm(false)">Anulează</button>
+      <button class="btn-confirm" onclick="ncCloseConfirm(true)">Ieși din cont</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
