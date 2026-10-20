@@ -1899,6 +1899,159 @@ html, body {
   transform: none !important;
 }
 
+
+/* ============================================
+   MINI-GAMES (X și 0 & Șah)
+   ============================================ */
+#gameModal {
+  border: 1px solid #f845ff;
+  border-radius: 18px;
+  padding: 20px;
+  width: min(500px, 95vw);
+  background: #1d1d1d;
+  color: #fff;
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 60px rgba(248,69,255,.4);
+  z-index: 3000;
+}
+#gameModal::backdrop { background: rgba(0,0,0,0.8); }
+
+.game-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(14,227,255,.15); padding-bottom: 10px; }
+.game-tab { flex: 1; padding: 10px; background: #27292d; color: #9395bd; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit; transition: all 0.2s; }
+.game-tab.active { background: linear-gradient(135deg, #0086ff, #f845ff); color: #fff; }
+
+.game-content { display: none; flex-direction: column; align-items: center; }
+.game-content.active { display: flex; }
+
+/* X și 0 */
+#tttGrid { display: grid; grid-template-columns: repeat(3, 80px); grid-template-rows: repeat(3, 80px); gap: 8px; margin: 20px 0; }
+.ttt-cell {
+  background: #27292d; border: 1px solid rgba(14,227,255,.2); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px; font-weight: bold; cursor: pointer; transition: all 0.2s;
+}
+.ttt-cell:hover { background: #323336; border-color: #0086ff; }
+.ttt-cell.x { color: #0fe3ff; text-shadow: 0 0 10px #0fe3ff; }
+.ttt-cell.o { color: #f845ff; text-shadow: 0 0 10px #f845ff; }
+
+/* Șah */
+#chessBoard { display: grid; grid-template-columns: repeat(8, 40px); grid-template-rows: repeat(8, 40px); border: 2px solid #9395bd; margin: 20px 0; }
+.chess-square { display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; user-select: none; }
+.chess-square.light { background: #f0fdfa; color: #134e4a; }
+.chess-square.dark { background: #14b8a6; color: #fff; }
+.chess-square.selected { outline: 3px solid #f845ff; outline-offset: -3px; }
+
+.game-status { font-size: 16px; font-weight: bold; margin-bottom: 15px; height: 24px; color: #0fe3ff; }
+.btn-reset { padding: 10px 20px; background: rgba(255,66,102,0.2); color: #ff4266; border: 1px solid #ff4266; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+
+/* ============================================
+   MINI-GAMES OVERLAY
+   ============================================ */
+#gameModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+}
+#gameModal.on { display: flex !important; }
+
+.game-modal-box {
+  background: #1d1d1d;
+  border: 1px solid #f845ff;
+  border-radius: 18px;
+  padding: 24px;
+  width: min(500px, 95vw);
+  box-shadow: 0 0 60px rgba(248, 69, 255, 0.4);
+  color: #fff;
+  position: relative;
+}
+
+.game-close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+}
+.game-close-btn:hover { background: rgba(255, 66, 102, 0.5); }
+
+.game-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(14,227,255,.15); padding-bottom: 10px; }
+.game-tab { flex: 1; padding: 10px; background: #27292d; color: #9395bd; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+.game-tab.active { background: linear-gradient(135deg, #0086ff, #f845ff); color: #fff; }
+
+.game-content { display: none; flex-direction: column; align-items: center; }
+.game-content.active { display: flex; }
+
+/* X și 0 */
+#tttGrid { display: grid; grid-template-columns: repeat(3, 80px); grid-template-rows: repeat(3, 80px); gap: 8px; margin: 20px 0; }
+.ttt-cell { background: #27292d; border: 1px solid rgba(14,227,255,.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+.ttt-cell:hover { background: #323336; border-color: #0086ff; }
+.ttt-cell.x { color: #0fe3ff; text-shadow: 0 0 10px #0fe3ff; }
+.ttt-cell.o { color: #f845ff; text-shadow: 0 0 10px #f845ff; }
+
+/* Șah */
+#chessBoard { display: grid; grid-template-columns: repeat(8, 40px); grid-template-rows: repeat(8, 40px); border: 2px solid #9395bd; margin: 20px 0; }
+.chess-square { display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; user-select: none; }
+.chess-square.light { background: #f0fdfa; color: #134e4a; }
+.chess-square.dark { background: #14b8a6; color: #fff; }
+.chess-square.selected { outline: 3px solid #f845ff; outline-offset: -3px; }
+
+.game-status { font-size: 16px; font-weight: bold; margin-bottom: 15px; height: 24px; color: #0fe3ff; }
+.btn-reset { padding: 10px 20px; background: rgba(255,66,102,0.2); color: #ff4266; border: 1px solid #ff4266; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+
+
+/* ============================================
+   FIX GAME MODAL CENTERING (FORCED)
+   ============================================ */
+#gameModal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 999999 !important;
+  background: rgba(0, 0, 0, 0.85) !important;
+  backdrop-filter: blur(6px) !important;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  transform: none !important;
+}
+
+#gameModal.on {
+  display: flex !important;
+}
+
+.game-modal-box {
+  position: relative !important;
+  background: #1d1d1d !important;
+  border: 1px solid #f845ff !important;
+  border-radius: 18px !important;
+  padding: 24px !important;
+  width: min(500px, 95vw) !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  box-shadow: 0 0 60px rgba(248, 69, 255, 0.4) !important;
+  color: #fff !important;
+  margin: auto !important;
+}
+
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0086ff">
@@ -1907,6 +2060,7 @@ html, body {
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="NeonChat">
 <link rel="apple-touch-icon" href="/icon-192.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 </head>
 <body>
 
@@ -1991,7 +2145,8 @@ html, body {
         </div>
         <button class="ghost" id="srchBtn" title="Caută">🔍</button>
         <button class="ghost" id="expBtn" title="Export">📤</button>
-        <button class="ghost" id="bgBtn" title="Fundal">🎨</button>
+        <button class="ghost" id="gameBtn" title="Jocuri">🎮</button>
+      <button class="ghost" id="bgBtn" title="Fundal">🎨</button>
       <button class="ghost" id="splitBtn" title="Cheltuieli" hidden>💰</button>
       <button class="ghost" id="info" title="Membri" hidden>👥</button>
         <button class="ghost" id="add" title="Adaugă" hidden>＋</button>
@@ -4697,7 +4852,103 @@ function ncCloseConfirm(val) {
   setTimeout(attachLogout, 3000);
 })();
 
+
+
+// ========== TIC-TAC-TOE MULTIPLAYER ==========
+let currentGameId = null;
+let gamePollInterval = null;
+let isMyTurn = false;
+
+window.createGameInvite = async function() {
+  if(!room || !room.id) { if(typeof toast === 'function') toast('Intră într-un grup!', 'warn'); return; }
+  try {
+    const r = await api('game_create', { room_id: room.id });
+    currentGameId = r.id;
+
+    // Trimitem un mesaj special în chat
+    await api('send', {
+      room_id: room.id,
+      body: "🎮 Te-am invitat la X și 0! Apasă pe mesaj pentru a juca.",
+      type: 'game_invite',
+      file_url: currentGameId // Folosim file_url ca să stocăm ID-ul jocului
+    });
+
+    if(typeof toast === 'function') toast('Invitație trimisă!', 'ok');
+    document.getElementById('gameModal').classList.remove('on');
+    reloadMsgs();
+  } catch(e) {
+    if(typeof toast === 'function') toast(e, 'err');
+  }
+};
+
+function checkActiveGame() {
+  if(currentGameId) {
+    api('game_get', 0, '&id=' + currentGameId).then(g => {
+      if(g.status === 'playing') {
+        document.getElementById('gameTtt').classList.add('active');
+        renderMultiTTT(g);
+      }
+    }).catch(() => {});
+  }
+}
+
+function renderMultiTTT(g) {
+  const grid = document.getElementById('tttGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  const board = g.board.split(',');
+  const mySym = (g.p1 == me.id) ? 'X' : 'O';
+  isMyTurn = (g.turn == me.id);
+
+  const statusEl = document.getElementById('tttStatus');
+  if(g.status === 'finished') statusEl.textContent = "Joc terminat!";
+  else statusEl.textContent = isMyTurn ? "Rândul tău ("+mySym+")" : "Așteaptă rândul...";
+
+  board.forEach((cell, i) => {
+    const div = document.createElement('div');
+    div.className = 'ttt-cell';
+    if(cell === 'X') div.classList.add('x');
+    if(cell === 'O') div.classList.add('o');
+    div.textContent = cell;
+
+    div.onclick = () => {
+      if(!isMyTurn || cell !== '' || g.status !== 'playing') return;
+      api('game_move', { id: currentGameId, pos: i }).then(() => {
+        checkActiveGame(); // Refresh instant
+      }).catch(err => toast(err, 'err'));
+    };
+    grid.appendChild(div);
+  });
+}
+
+// Detectarea click-ului pe mesajul de invitație din chat
+document.addEventListener('click', function(e) {
+  const inviteMsg = e.target.closest('.m');
+  if(inviteMsg && inviteMsg.textContent.includes('Te-am invitat la X și 0')) {
+    // Găsim ID-ul jocului din dataset (ne trebuie un update mic la randare)
+    const gid = inviteMsg.dataset.gameid;
+    if(!gid) return;
+
+    e.preventDefault();
+    api('game_join', { id: gid }).then(() => {
+      currentGameId = gid;
+      document.getElementById('gameModal').classList.add('on');
+      if(typeof toast === 'function') toast('Te-ai alăturat jocului!', 'ok');
+    }).catch(err => toast(err, 'err'));
+  }
+}, true);
+
+// Polling pentru joc (la fiecare 2 secunde dacă e deschis)
+setInterval(() => {
+  const modal = document.getElementById('gameModal');
+  if(modal && modal.classList.contains('on') && currentGameId) {
+    checkActiveGame();
+  }
+}, 2000);
+
 enter().catch(auth);
+
+
 
 // ========== SERVICE WORKER (PWA) ==========
 if('serviceWorker' in navigator){
@@ -4813,5 +5064,245 @@ if('serviceWorker' in navigator){
   </div>
 </div>
 
+
+
+
+
+<!-- MINI GAMES OVERLAY -->
+<div id="gameModal">
+  <div class="game-modal-box">
+    <button class="game-close-btn" onclick="document.getElementById('gameModal').classList.remove('on')">✕</button>
+    <div class="game-tabs">
+      <button class="game-tab active" onclick="window.switchGame('ttt', this)">❌ X și 0</button>
+      <button class="game-tab" onclick="window.switchGame('chess', this)">♟️ Șah</button>
+    </div>
+
+    <div id="gameTtt" class="game-content active">
+      <div class="game-status" id="tttStatus">Rândul lui X</div>
+      <div id="tttGrid"></div>
+      <button class="btn-reset" onclick="window.resetTTT()">🔄 Reîncepe</button>
+    </div>
+
+    <div id="gameChess" class="game-content">
+      <div class="game-status" id="chessStatus">Albul mută</div>
+      <div id="chessBoard"></div>
+      <button class="btn-reset" onclick="window.resetChess()">🔄 Reîncepe</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ========== MINI-GAMES SAFE LOGIC ==========
+window.switchGame = function(game, btn) {
+  document.querySelectorAll('.game-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.game-content').forEach(function(c){ c.classList.remove('active'); });
+  btn.classList.add('active');
+  if(game === 'ttt') {
+    document.getElementById('gameTtt').classList.add('active');
+  } else {
+    document.getElementById('gameChess').classList.add('active');
+  }
+};
+
+var tttBoard = ["","","","","","","","",""];
+var tttPlayer = "X";
+var tttActive = true;
+
+window.resetTTT = function() {
+  tttBoard = ["","","","","","","","",""];
+  tttPlayer = "X";
+  tttActive = true;
+  document.getElementById('tttStatus').textContent = "Rândul lui X";
+  renderTTT();
+};
+
+function renderTTT() {
+  var grid = document.getElementById('tttGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  tttBoard.forEach(function(cell, i) {
+    var div = document.createElement('div');
+    div.className = 'ttt-cell';
+    if(cell === 'X') div.classList.add('x');
+    if(cell === 'O') div.classList.add('o');
+    div.textContent = cell;
+    div.onclick = function() { playTTT(i); };
+    grid.appendChild(div);
+  });
+}
+
+function playTTT(i) {
+  if(!tttActive || tttBoard[i] !== "") return;
+  tttBoard[i] = tttPlayer;
+  if(checkTTTWinner()) {
+    document.getElementById('tttStatus').textContent = "🎉 " + tttPlayer + " a câștigat!";
+    tttActive = false;
+  } else if(tttBoard.indexOf("") === -1) {
+    document.getElementById('tttStatus').textContent = "🤝 Egalitate!";
+    tttActive = false;
+  } else {
+    tttPlayer = tttPlayer === "X" ? "O" : "X";
+    document.getElementById('tttStatus').textContent = "Rândul lui " + tttPlayer;
+  }
+  renderTTT();
+}
+
+function checkTTTWinner() {
+  var wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  return wins.some(function(w) {
+    return tttBoard[w[0]] && tttBoard[w[0]] === tttBoard[w[1]] && tttBoard[w[0]] === tttBoard[w[2]];
+  });
+}
+
+
+
+
+// ========== REAL CHESS LOGIC (chess.js) ==========
+var game = new Chess();
+var selectedSquare = null;
+
+window.resetChess = function() {
+  game = new Chess();
+  selectedSquare = null;
+  document.getElementById('chessStatus').textContent = "Albul mută";
+  renderChess();
+};
+
+function renderChess() {
+  var board = document.getElementById('chessBoard');
+  if(!board) return;
+  board.innerHTML = '';
+
+  var boardState = game.board(); // 8x8 array
+  var pieceMap = {
+    'p': { 'w': '♙', 'b': '♟' },
+    'r': { 'w': '♖', 'b': '♜' },
+    'n': { 'w': '♘', 'b': '♞' },
+    'b': { 'w': '♗', 'b': '♝' },
+    'q': { 'w': '♕', 'b': '♛' },
+    'k': { 'w': '♔', 'b': '♚' }
+  };
+
+  for(var row = 0; row < 8; row++) {
+    for(var col = 0; col < 8; col++) {
+      var idx = row * 8 + col;
+      var pieceObj = boardState[row][col];
+      var isLight = (row + col) % 2 === 0;
+
+      var div = document.createElement('div');
+      div.className = 'chess-square ' + (isLight ? 'light' : 'dark');
+      if(selectedSquare === idx) div.classList.add('selected');
+
+      if(pieceObj) {
+        div.textContent = pieceMap[pieceObj.type][pieceObj.color];
+      } else {
+        div.textContent = '';
+      }
+
+      // Adăugăm un mic punct mov pentru mutările valide
+      if(selectedSquare !== null) {
+        var moves = game.moves({ square: alg(selectedSquare), verbose: true });
+        var targetMove = moves.find(function(m) { return m.to === alg(idx); });
+        if(targetMove) {
+           div.style.boxShadow = 'inset 0 0 0 3px rgba(248,69,255,0.6)';
+        }
+      }
+
+      div.onclick = (function(i) { return function() { playChess(i); }; })(idx);
+      board.appendChild(div);
+    }
+  }
+}
+
+function alg(idx) {
+  var files = 'abcdefgh';
+  var rank = 8 - Math.floor(idx / 8);
+  var file = files[idx % 8];
+  return file + rank;
+}
+
+function playChess(idx) {
+  if(selectedSquare !== null) {
+    if(selectedSquare === idx) {
+      selectedSquare = null;
+      renderChess();
+      return;
+    }
+
+    // Încercăm să facem mutarea
+    try {
+      var move = game.move({
+        from: alg(selectedSquare),
+        to: alg(idx),
+        promotion: 'q' // Promovăm automat în regină
+      });
+
+      if(move) {
+        selectedSquare = null;
+        renderChess();
+        updateChessStatus();
+        return;
+      }
+    } catch(e) {
+      // Mutare invalidă (lăsăm să selecteze altă piesă)
+    }
+  }
+
+  // Selectăm o piesă
+  var board = game.board();
+  var row = Math.floor(idx / 8);
+  var col = idx % 8;
+  var piece = board[row][col];
+
+  if(piece && piece.color === game.turn()) {
+    selectedSquare = idx;
+    renderChess();
+  } else {
+    selectedSquare = null;
+    renderChess();
+  }
+}
+
+function updateChessStatus() {
+  var st = document.getElementById('chessStatus');
+  if(game.in_checkmate()) {
+    st.textContent = "🏆 Șah Mat! " + (game.turn() === 'w' ? 'Negrul' : 'Albul') + " a câștigat!";
+  } else if(game.in_draw()) {
+    st.textContent = "🤝 Remiză!";
+  } else if(game.in_check()) {
+    st.textContent = "⚠️ Șah! Rândul lui " + (game.turn() === 'w' ? 'Alb' : 'Negru');
+  } else {
+    st.textContent = (game.turn() === 'w' ? 'Albul' : 'Negrul') + " mută";
+  }
+}
+
+// Deschidere Modal - Event Delegation
+document.addEventListener('click', function(e){
+  if(e.target.closest && e.target.closest('#gameBtn')){
+    e.preventDefault();
+    e.stopPropagation();
+    var m = document.getElementById('gameModal');
+    if(!m) return;
+    m.classList.add('on');
+    renderTTT();
+    renderChess();
+  }
+}, true);
+
+// Închidere Modal
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    var m = document.getElementById('gameModal');
+    if(m) m.classList.remove('on');
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function(){
+  renderTTT();
+  renderChess();
+});
+</script>
 </body>
+
 </html>

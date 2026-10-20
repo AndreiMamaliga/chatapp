@@ -229,5 +229,45 @@ case 'set_room_bg':
  if(!member($r))out(['error'=>'Interzis'],403);
  q('UPDATE rooms SET bg_style=? WHERE id=?',[$bg ?: null,$r]);
  out(['ok'=>1]);
+case 'game_create':
+ $r=(int)($in['room_id']??0);
+ if(!member($r))out(['error'=>'Interzis'],403);
+ q('INSERT INTO games(room_id,p1) VALUES(?,?)',[$r,$uid]);
+ $gid=$pdo->lastInsertId();
+ out(['id'=>$gid]);
+case 'game_join':
+ $gid=(int)($in['id']??0);
+ $g=q('SELECT * FROM games WHERE id=?',[$gid])->fetch();
+ if(!$g||$g['status']!='waiting')out(['error'=>'Joc indisponibil'],400);
+ if($g['p1']==$uid)out(['error'=>'Nu poți juca împotriva ta'],400);
+ q('UPDATE games SET p2=?, status="playing", turn=? WHERE id=?',[$uid,$g['p1'],$gid]);
+ out(['ok'=>1]);
+case 'game_get':
+ $gid=(int)($_GET['id']??0);
+ $g=q('SELECT * FROM games WHERE id=?',[$gid])->fetch();
+ if(!$g)out(['error'=>'Joc inexistent'],404);
+ if($g['p1']!=$uid && $g['p2']!=$uid)out(['error'=>'Nu faci parte din joc'],403);
+ out($g);
+case 'game_move':
+ $gid=(int)($in['id']??0);$pos=(int)($in['pos']??-1);
+ $g=q('SELECT * FROM games WHERE id=?',[$gid])->fetch();
+ if(!$g||$g['status']!='playing')out(['error'=>'Joc inactiv'],400);
+ if($g['turn']!=$uid)out(['error'=>'Nu e rândul tău'],403);
+ if($pos<0||$pos>8)out(['error'=>'Mutare invalidă'],400);
+ $board=explode(',',$g['board']);
+ if($board[$pos]!='')out(['error'=>'Căsuță ocupată'],400);
+ $sym=($uid==$g['p1'])?'X':'O';
+ $board[$pos]=$sym;
+ $newBoard=implode(',',$board);
+ $nextTurn=($uid==$g['p1'])?$g['p2']:$g['p1'];
+ $wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+ $status='playing';
+ foreach($wins as $w){
+   if($board[$w[0]] && $board[$w[0]]==$board[$w[1]] && $board[$w[0]]==$board[$w[2]])$status='finished';
+ }
+ if(!in_array('',$board))$status='finished';
+ q('UPDATE games SET board=?, turn=?, status=? WHERE id=?',[$newBoard,$nextTurn,$status,$gid]);
+ out(['ok'=>1]);
+
 }
 out(['error'=>'unknown'],404);
