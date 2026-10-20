@@ -1583,6 +1583,140 @@ html[data-pwa="1"] .nc-install-btn{
   box-shadow: 0 0 0 2px rgba(0,134,255,.2) !important;
 }
 
+
+/* ========== THEMES SYSTEM ========== */
+html[data-theme="neon"], html[data-theme="dark"] {
+  --body-bg-color: #1d1d1d;
+  --theme-bg-color: #27292d;
+  --border-color: #323336;
+  --body-color: #d1d1d2;
+  --theme-color: #0086ff;
+  --theme-color-2: #f845ff;
+  --msg-hover-bg: rgba(47,50,56,.54);
+  --active-conversation-bg: linear-gradient(to right, rgba(47,50,56,.54), rgba(238,242,244,0));
+  --chat-text-bg: #383b40;
+  --chat-text-color: #e9eaff;
+  --msg-date: #626466;
+  --msg-message: #626466;
+  --input-bg: #2f3236;
+  --settings-icon-color: #7c7e80;
+  --button-bg-color: #393b40;
+  --button-color: #d1d1d2;
+  --input-chat-color: #6f7073;
+}
+html[data-theme="light"] {
+  --body-bg-color: #e5ecef;
+  --theme-bg-color: #fff;
+  --border-color: #eef2f4;
+  --body-color: #273346;
+  --theme-color: #0086ff;
+  --theme-color-2: #f845ff;
+  --msg-hover-bg: rgba(238,242,244,.6);
+  --active-conversation-bg: linear-gradient(to right, rgba(0,134,255,.08), rgba(238,242,244,0));
+  --chat-text-bg: #f1f2f6;
+  --chat-text-color: #273346;
+  --msg-date: #c0c7d2;
+  --msg-message: #969eaa;
+  --input-bg: #f8f8fa;
+  --settings-icon-color: #c1c7cd;
+  --button-bg-color: #f0f7ff;
+  --button-color: #0086ff;
+  --input-chat-color: #a2a2a2;
+}
+html[data-theme="nord"] {
+  --body-bg-color: #2e3440;
+  --theme-bg-color: #3b4252;
+  --border-color: #434c5e;
+  --body-color: #eceff4;
+  --theme-color: #88c0d0;
+  --theme-color-2: #b48ead;
+  --msg-hover-bg: rgba(67,76,94,.6);
+  --active-conversation-bg: linear-gradient(to right, rgba(67,76,94,.8), rgba(67,76,94,0));
+  --chat-text-bg: #434c5e;
+  --chat-text-color: #eceff4;
+  --msg-date: #616e88;
+  --msg-message: #81a1c1;
+  --input-bg: #434c5e;
+  --settings-icon-color: #81a1c1;
+  --button-bg-color: #434c5e;
+  --button-color: #88c0d0;
+  --input-chat-color: #616e88;
+}
+html[data-theme="sunset"] {
+  --body-bg-color: #1a1515;
+  --theme-bg-color: #2a1f1f;
+  --border-color: #3d2c2c;
+  --body-color: #f5e6e6;
+  --theme-color: #ff7e5f;
+  --theme-color-2: #feb47b;
+  --msg-hover-bg: rgba(61,44,44,.6);
+  --active-conversation-bg: linear-gradient(to right, rgba(255,126,95,.15), rgba(255,126,95,0));
+  --chat-text-bg: #3d2c2c;
+  --chat-text-color: #f5e6e6;
+  --msg-date: #7a5c5c;
+  --msg-message: #b89090;
+  --input-bg: #3d2c2c;
+  --settings-icon-color: #b89090;
+  --button-bg-color: #3d2c2c;
+  --button-color: #ff7e5f;
+  --input-chat-color: #7a5c5c;
+}
+html[data-theme="forest"] {
+  --body-bg-color: #0f1a12;
+  --theme-bg-color: #1a2a1f;
+  --border-color: #2a3a2c;
+  --body-color: #d4e6d8;
+  --theme-color: #4ade80;
+  --theme-color-2: #22d3ee;
+  --msg-hover-bg: rgba(42,58,44,.6);
+  --active-conversation-bg: linear-gradient(to right, rgba(74,222,128,.1), rgba(74,222,128,0));
+  --chat-text-bg: #2a3a2c;
+  --chat-text-color: #d4e6d8;
+  --msg-date: #4a6b50;
+  --msg-message: #6b9b75;
+  --input-bg: #2a3a2c;
+  --settings-icon-color: #6b9b75;
+  --button-bg-color: #2a3a2c;
+  --button-color: #4ade80;
+  --input-chat-color: #4a6b50;
+}
+html[data-theme="rose"] {
+  --body-bg-color: #1a0e1a;
+  --theme-bg-color: #2a1a2c;
+  --border-color: #3d2840;
+  --body-color: #f0e4f0;
+  --theme-color: #ec4899;
+  --theme-color-2: #a855f7;
+  --msg-hover-bg: rgba(61,40,64,.6);
+  --active-conversation-bg: linear-gradient(to right, rgba(236,72,153,.1), rgba(236,72,153,0));
+  --chat-text-bg: #3d2840;
+  --chat-text-color: #f0e4f0;
+  --msg-date: #7a5a80;
+  --msg-message: #a88db0;
+  --input-bg: #3d2840;
+  --settings-icon-color: #a88db0;
+  --button-bg-color: #3d2840;
+  --button-color: #ec4899;
+  --input-chat-color: #7a5a80;
+}
+
+/* Theme selector UI */
+.theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+.theme-swatch {
+  background: transparent; border: 2px solid var(--border-color);
+  padding: 6px; border-radius: 12px; cursor: pointer;
+  display: flex; flex-direction: column; gap: 6px; align-items: center;
+  font-size: 11px; color: var(--body-color); font-family: inherit;
+  transition: all .2s;
+}
+.theme-swatch:hover { border-color: var(--theme-color); transform: translateY(-1px); }
+.theme-swatch.active { border-color: var(--theme-color); box-shadow: 0 0 0 2px rgba(0,134,255,.3); }
+.theme-preview {
+  width: 100%; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 2px;
+}
+.theme-preview-dot { width: 10px; height: 10px; border-radius: 50%; }
+
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0086ff">
@@ -1675,7 +1809,8 @@ html[data-pwa="1"] .nc-install-btn{
         </div>
         <button class="ghost" id="srchBtn" title="Caută">🔍</button>
         <button class="ghost" id="expBtn" title="Export">📤</button>
-        <button class="ghost" id="splitBtn" title="Cheltuieli" hidden>💰</button>
+        <button class="ghost" id="bgBtn" title="Fundal">🎨</button>
+      <button class="ghost" id="splitBtn" title="Cheltuieli" hidden>💰</button>
       <button class="ghost" id="info" title="Membri" hidden>👥</button>
         <button class="ghost" id="add" title="Adaugă" hidden>＋</button>
       </header>
@@ -1732,6 +1867,10 @@ html[data-pwa="1"] .nc-install-btn{
       <textarea id="editBio" placeholder="Scrie ceva despre tine..." maxlength="300" rows="3"></textarea>
     </div>
     <button class="profile-save" id="saveProf" type="button">💾 Salvează</button>
+    <div class="p-card" style="margin-top:16px">
+      <label>🎨 Temă / Тема</label>
+      <div class="theme-grid" id="themeGrid"></div>
+    </div>
     <div class="p-card" style="margin-top:16px">
       <label>🌐 Limba / Язык</label>
       <select id="langSelect" style="width:100%;padding:12px 14px;background:var(--input-bg);border:1px solid var(--border-color);border-radius:10px;color:var(--text);font:inherit;outline:none;cursor:pointer">
@@ -1956,6 +2095,7 @@ async function openRoom(r){
     };
   }
   $('#msgs').innerHTML='';
+  if(typeof window.applyRoomBg === 'function') window.applyRoomBg(r.bg_style);
   $('#title').textContent=r.name;
   $('#sub').textContent='';
   const tAv=$('#tAv');
@@ -1965,6 +2105,7 @@ async function openRoom(r){
   $('#add').hidden=r.is_group!=1;
   $('#info').hidden=r.is_group!=1;
   $('#splitBtn').hidden=r.is_group!=1;
+  $('#bgBtn').hidden=false;
   $('#app').classList.add('open');
   $('#rbar').classList.remove('on');
   updateInputVisibility();
@@ -3978,6 +4119,233 @@ document.addEventListener('DOMContentLoaded', applyChatTranslations);
   console.log('[QS] Handlers active');
 })();
 
+
+// ========== THEME SYSTEM ==========
+var AVAILABLE_THEMES = [
+  {id: 'neon', name: 'Neon', bg: '#27292d', accent: '#0086ff'},
+  {id: 'light', name: 'Light', bg: '#fff', accent: '#0086ff'},
+  {id: 'nord', name: 'Nord', bg: '#3b4252', accent: '#88c0d0'},
+  {id: 'sunset', name: 'Sunset', bg: '#2a1f1f', accent: '#ff7e5f'},
+  {id: 'forest', name: 'Forest', bg: '#1a2a1f', accent: '#4ade80'},
+  {id: 'rose', name: 'Rose', bg: '#2a1a2c', accent: '#ec4899'}
+];
+
+function applyTheme(themeId){
+  if(themeId === 'dark') themeId = 'neon';
+  document.documentElement.setAttribute('data-theme', themeId);
+  localStorage.setItem('nc_theme', themeId);
+  localStorage.setItem('nc-theme', themeId);
+
+  document.querySelectorAll('.theme-swatch').forEach(function(btn){
+    btn.classList.toggle('active', btn.dataset.theme === themeId);
+  });
+
+  var tBtn = document.getElementById('theme') || document.getElementById('themeBtn');
+  if(tBtn){
+    tBtn.textContent = themeId === 'light' ? '☀️' : '🌙';
+  }
+
+  var frame = document.getElementById('splitFrame');
+  if(frame && frame.contentWindow){
+    try { frame.contentWindow.postMessage('themeChanged', '*'); } catch(e){}
+  }
+}
+
+function renderThemeSwatches(){
+  var grid = document.getElementById('themeGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  AVAILABLE_THEMES.forEach(function(t){
+    var btn = document.createElement('button');
+    btn.className = 'theme-swatch';
+    btn.type = 'button';
+    btn.dataset.theme = t.id;
+    btn.innerHTML = '<div class="theme-preview" style="background:' + t.bg + ';border:1px solid ' + t.accent + '33">'
+      + '<div class="theme-preview-dot" style="background:' + t.accent + '"></div>'
+      + '</div><span>' + t.name + '</span>';
+    btn.onclick = function(){
+      applyTheme(t.id);
+      try{ if(typeof toast === 'function') toast('🎨 ' + t.name, 'ok', 1500); }catch(e){}
+    };
+    grid.appendChild(btn);
+  });
+}
+
+// Init
+(function(){
+  var saved = localStorage.getItem('nc_theme') || localStorage.getItem('nc-theme') || 'neon';
+  applyTheme(saved);
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', renderThemeSwatches);
+  } else {
+    renderThemeSwatches();
+  }
+  setTimeout(renderThemeSwatches, 800);
+  setTimeout(renderThemeSwatches, 2000);
+})();
+
+// Replace theme toggle button (quick light/dark switch)
+(function(){
+  function attach(){
+    var btn = document.getElementById('theme') || document.getElementById('themeBtn');
+    if(btn && !btn._themeBound){
+      btn._themeBound = true;
+      btn.onclick = function(){
+        var cur = document.documentElement.getAttribute('data-theme') || 'neon';
+        applyTheme(cur === 'light' ? 'neon' : 'light');
+      };
+    }
+  }
+  setTimeout(attach, 500);
+  setTimeout(attach, 1500);
+})();
+
+
+
+
+// ========== CUSTOM BACKGROUNDS v3 (preview instant) ==========
+window.applyRoomBg = function(bg){
+  var msgs = document.getElementById('msgs');
+  if(!msgs) return;
+
+  if(!bg || bg === 'none' || bg === ''){
+    msgs.style.setProperty('background-image', 'none', 'important');
+    msgs.style.setProperty('background-color', 'var(--theme-bg-color)', 'important');
+  } else if(bg.indexOf('http') === 0 || bg.indexOf('data:') === 0){
+    msgs.style.setProperty('background-image', 'url("' + bg + '")', 'important');
+    msgs.style.setProperty('background-size', 'cover', 'important');
+    msgs.style.setProperty('background-position', 'center', 'important');
+    msgs.style.setProperty('background-repeat', 'no-repeat', 'important');
+    msgs.style.setProperty('background-color', '#1d1d1d', 'important');
+  } else if(bg.indexOf('url(') === 0){
+    msgs.style.setProperty('background-image', bg, 'important');
+    msgs.style.setProperty('background-size', 'cover', 'important');
+    msgs.style.setProperty('background-position', 'center', 'important');
+    msgs.style.setProperty('background-repeat', 'no-repeat', 'important');
+  } else {
+    msgs.style.setProperty('background-image', bg, 'important');
+    msgs.style.setProperty('background-size', 'cover', 'important');
+    msgs.style.setProperty('background-position', 'center', 'important');
+  }
+  console.log('[BG] Applied:', bg);
+};
+
+(function(){
+  console.log('[BG v3] Init - preview instant activat');
+  var currentBg = 'none';
+  var originalBg = 'none';
+  var modal = null;
+
+  function ensureModal(){
+    modal = document.getElementById('bgModal');
+    return modal;
+  }
+
+  document.addEventListener('click', function(e){
+
+    // --- 1. Click pe butonul 🎨 din header ---
+    if(e.target.closest('#bgBtn')){
+      e.preventDefault();
+      e.stopPropagation();
+
+      if(!ensureModal()){
+        console.error('[BG v3] Modal lipsă!');
+        if(typeof toast === 'function') toast('Modal lipsă', 'err');
+        return;
+      }
+
+      originalBg = (typeof room !== 'undefined' && room && room.bg_style) || 'none';
+      currentBg = originalBg;
+
+      var input = document.getElementById('bgCustomUrl');
+      if(input) input.value = (currentBg.indexOf('http') === 0) ? currentBg : '';
+
+      // Highlight preset activ
+      document.querySelectorAll('.bg-preset').forEach(function(b){
+        var isActive = (b.dataset.bg === currentBg);
+        b.style.borderColor = isActive ? '#0086ff' : 'var(--border-color)';
+        b.style.borderWidth = isActive ? '3px' : '2px';
+      });
+
+      modal.showModal();
+      console.log('[BG v3] Modal deschis. Original:', originalBg);
+      return;
+    }
+
+    // --- 2. Click pe un preset → PREVIEW INSTANT ---
+    if(e.target.closest('.bg-preset')){
+      e.preventDefault();
+      var btn = e.target.closest('.bg-preset');
+      currentBg = btn.dataset.bg;
+
+      console.log('[BG v3] Preset click:', currentBg);
+
+      // Highlight
+      document.querySelectorAll('.bg-preset').forEach(function(b){
+        b.style.borderColor = 'var(--border-color)';
+        b.style.borderWidth = '2px';
+      });
+      btn.style.borderColor = '#0086ff';
+      btn.style.borderWidth = '3px';
+
+      // Preview instant în chat
+      window.applyRoomBg(currentBg);
+
+      var input = document.getElementById('bgCustomUrl');
+      if(input) input.value = '';
+
+      if(typeof toast === 'function') toast('👁️ Preview — click Salvează pentru a păstra', 'ok', 1500);
+      return;
+    }
+
+    // --- 3. Click Cancel → REVERT la original ---
+    if(e.target.closest('#bgCancel')){
+      e.preventDefault();
+      console.log('[BG v3] Cancel, revert la:', originalBg);
+      window.applyRoomBg(originalBg);
+      if(ensureModal()) modal.close();
+      return;
+    }
+
+    // --- 4. Click Save → PERSISTĂ ---
+    if(e.target.closest('#bgSave')){
+      e.preventDefault();
+
+      var urlInput = document.getElementById('bgCustomUrl');
+      var url = urlInput ? urlInput.value.trim() : '';
+      var finalBg = url ? ('url("' + url + '")') : currentBg;
+
+      console.log('[BG v3] Save:', finalBg);
+
+      if(typeof room === 'undefined' || !room || !room.id){
+        if(typeof toast === 'function') toast('Nu e cameră', 'err');
+        return;
+      }
+
+      if(typeof api !== 'function'){
+        if(typeof toast === 'function') toast('API lipsă', 'err');
+        return;
+      }
+
+      api('set_room_bg', { room_id: room.id, bg_style: finalBg })
+        .then(function(resp){
+          console.log('[BG v3] Save OK:', resp);
+          room.bg_style = finalBg;
+          window.applyRoomBg(finalBg);
+          if(ensureModal()) modal.close();
+          if(typeof toast === 'function') toast('🎨 Fundal salvat!', 'ok');
+        })
+        .catch(function(err){
+          console.error('[BG v3] Save error:', err);
+          if(typeof toast === 'function') toast('Eroare: ' + err, 'err');
+        });
+      return;
+    }
+  }, true);
+
+  console.log('[BG v3] Handlers active');
+})();
+
 enter().catch(auth);
 
 // ========== SERVICE WORKER (PWA) ==========
@@ -4051,6 +4419,28 @@ if('serviceWorker' in navigator){
   <div style="display:flex;gap:8px;justify-content:flex-end">
     <button type="button" id="qsCancel" style="padding:10px 20px;background:transparent;color:#888;border:1px solid var(--border-color);border-radius:10px;font:inherit;font-weight:600;cursor:pointer">Anulează</button>
     <button type="button" id="qsSave" style="padding:10px 24px;background:linear-gradient(135deg,#0086ff,#f845ff);color:#fff;border:0;border-radius:10px;font:inherit;font-weight:700;cursor:pointer;letter-spacing:.5px">Salvează</button>
+  </div>
+</dialog>
+
+
+<dialog id="bgModal" style="border:1px solid var(--theme-color);border-radius:18px;padding:24px;width:min(440px,calc(100vw - 40px));background:var(--theme-bg-color);color:var(--text);position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;box-shadow:0 0 60px rgba(0,134,255,.4);z-index:3000">
+  <h3 style="margin:0 0 16px;font-size:16px;text-transform:uppercase;letter-spacing:1.5px;background:linear-gradient(90deg,var(--theme-color),var(--theme-color-2));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700">🎨 Fundal Conversație</h3>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+    <button class="bg-preset" data-bg="none" style="height:60px;border-radius:10px;border:2px solid var(--border-color);background:var(--theme-bg-color);cursor:pointer">Default</button>
+    <button class="bg-preset" data-bg="linear-gradient(135deg, #141E30, #243B55)" style="height:60px;border-radius:10px;border:2px solid var(--border-color);background:linear-gradient(135deg, #141E30, #243B55);cursor:pointer"></button>
+    <button class="bg-preset" data-bg="linear-gradient(135deg, #000428, #004e92)" style="height:60px;border-radius:10px;border:2px solid var(--border-color);background:linear-gradient(135deg, #000428, #004e92);cursor:pointer"></button>
+    <button class="bg-preset" data-bg="linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b)" style="height:60px;border-radius:10px;border:2px solid var(--border-color);background:linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b);cursor:pointer"></button>
+    <button class="bg-preset" data-bg="linear-gradient(135deg, #0f0c29, #302b63, #24243e)" style="height:60px;border-radius:10px;border:2px solid var(--border-color);background:linear-gradient(135deg, #0f0c29, #302b63, #24243e);cursor:pointer"></button>
+    <button class="bg-preset" data-bg="radial-gradient(circle, #232526, #414345)" style="height:60px;border-radius:10px;border:2px solid var(--border-color);background:radial-gradient(circle, #232526, #414345);cursor:pointer"></button>
+  </div>
+
+  <label style="display:block;font-size:11px;color:#888;text-transform:uppercase;margin-bottom:6px">Sau pune un link către o imagine (URL)</label>
+  <input id="bgCustomUrl" placeholder="https://exemplu.com/poza.jpg" style="width:100%;padding:12px;background:rgba(255,255,255,.05);border:1px solid var(--border-color);border-radius:10px;color:var(--text);font:inherit;font-size:14px;outline:none;box-sizing:border-box;margin-bottom:16px">
+
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button type="button" id="bgCancel" style="padding:10px 20px;background:transparent;color:#888;border:1px solid var(--border-color);border-radius:10px;font-weight:600;cursor:pointer">Anulează</button>
+    <button type="button" id="bgSave" style="padding:10px 24px;background:linear-gradient(135deg,var(--theme-color),var(--theme-color-2));color:#fff;border:0;border-radius:10px;font-weight:700;cursor:pointer">Salvează</button>
   </div>
 </dialog>
 

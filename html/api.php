@@ -31,7 +31,7 @@ switch($a){
 case 'me':
  out(q('SELECT id,username FROM users WHERE id=?',[$uid])->fetch());
 case 'rooms':
- $rows=q('SELECT r.id,r.is_group,r.is_self,r.created_by,r.name,
+ $rows=q('SELECT r.id,r.is_group,r.is_self,r.created_by,r.bg_style,r.name,
   (SELECT m.body FROM messages m WHERE m.room_id=r.id AND m.deleted=0 ORDER BY m.id DESC LIMIT 1) lastmsg,
   (SELECT m.created_at FROM messages m WHERE m.room_id=r.id AND m.deleted=0 ORDER BY m.id DESC LIMIT 1) lasttime,
   (SELECT MAX(m.id) FROM messages m WHERE m.room_id=r.id) last_id,
@@ -223,5 +223,11 @@ case 'self_chat':
    q('INSERT INTO room_members(room_id,user_id) VALUES(?,?)',[$r,$uid]);
  }
  out(['id'=>$r]);
+case 'set_room_bg':
+ $r=(int)($in['room_id']??0);
+ $bg=trim($in['bg_style']??'');
+ if(!member($r))out(['error'=>'Interzis'],403);
+ q('UPDATE rooms SET bg_style=? WHERE id=?',[$bg ?: null,$r]);
+ out(['ok'=>1]);
 }
 out(['error'=>'unknown'],404);

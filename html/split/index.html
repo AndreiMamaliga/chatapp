@@ -203,6 +203,39 @@ input[type="checkbox"]:checked::after{
 .expense-btn.delete:hover { background: rgba(255,66,102,0.2); color: var(--danger); }
 .expense-btn.edit:hover { background: rgba(0,134,255,0.2); color: var(--theme-color); }
 
+
+/* ========== THEMES ========== */
+html[data-theme="neon"], html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1d1d1d; --theme-bg: #27292d; --border: #323336; --text: #d1d1d2;
+  --theme-color: #0086ff; --accent: #f845ff;
+}
+html[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f0f4f8; --theme-bg: #ffffff; --border: #e2e8f0; --text: #1e293b;
+  --theme-color: #0086ff; --accent: #f845ff;
+}
+html[data-theme="nord"] {
+  color-scheme: dark;
+  --bg: #2e3440; --theme-bg: #3b4252; --border: #434c5e; --text: #eceff4;
+  --theme-color: #88c0d0; --accent: #b48ead;
+}
+html[data-theme="sunset"] {
+  color-scheme: dark;
+  --bg: #1a1515; --theme-bg: #2a1f1f; --border: #3d2c2c; --text: #f5e6e6;
+  --theme-color: #ff7e5f; --accent: #feb47b;
+}
+html[data-theme="forest"] {
+  color-scheme: dark;
+  --bg: #0f1a12; --theme-bg: #1a2a1f; --border: #2a3a2c; --text: #d4e6d8;
+  --theme-color: #4ade80; --accent: #22d3ee;
+}
+html[data-theme="rose"] {
+  color-scheme: dark;
+  --bg: #1a0e1a; --theme-bg: #2a1a2c; --border: #3d2840; --text: #f0e4f0;
+  --theme-color: #ec4899; --accent: #a855f7;
+}
+
 </style>
 </head>
 <body>
@@ -766,6 +799,24 @@ document.addEventListener('DOMContentLoaded', function(){
       e.preventDefault();
       closeModal();
     };
+  }
+});
+
+
+// ========== THEME SYNC (de la chat) ==========
+function applySplitTheme(){
+  var theme = localStorage.getItem('nc_theme') || localStorage.getItem('nc-theme') || 'neon';
+  if(theme === 'dark') theme = 'neon';
+  document.documentElement.setAttribute('data-theme', theme);
+  console.log('[SPLIT] Theme applied:', theme);
+}
+
+applySplitTheme();
+
+window.addEventListener('message', function(e){
+  if(e.data === 'themeChanged'){
+    console.log('[SPLIT] themeChanged received from parent');
+    applySplitTheme();
   }
 });
 
