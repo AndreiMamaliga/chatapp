@@ -2052,6 +2052,158 @@ html, body {
   margin: auto !important;
 }
 
+
+/* ============================================
+   UI MAGIC (6 FEATURES)
+   ============================================ */
+
+/* 1. Sticky Date Separator */
+
+.date-sep span { box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important; }
+
+/* 2. Unread Divider */
+.unread-divider { margin-top: 20px !important; margin-bottom: 10px !important; }
+.unread-divider span { background: var(--theme-color) !important; color: #fff !important; border-color: var(--theme-color) !important; }
+
+/* 3. Overlapping Avatars for Groups */
+.group-av-stack { display: flex; align-items: center; justify-content: center; }
+.group-av-stack .av { border: 2px solid var(--bg-primary) !important; margin-left: -12px; }
+.group-av-stack .av:first-child { margin-left: 0; }
+
+/* 4. Animated Typing Dots */
+.typing-dots { display: inline-flex; align-items: center; gap: 3px; margin-left: 5px; }
+.typing-dots span { width: 5px; height: 5px; background-color: var(--theme-color); border-radius: 50%; display: inline-block; animation: typingBounce 1.4s infinite ease-in-out both; }
+.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+@keyframes typingBounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+/* 5. Scroll to Bottom Button */
+#scrollBtn {
+  position: absolute !important; bottom: 90px !important; right: 20px !important;
+  width: 44px !important; height: 44px !important; border-radius: 50% !important;
+  background: var(--theme-color) !important; color: #fff !important; border: none !important;
+  box-shadow: 0 4px 15px rgba(0,134,255,0.4) !important; cursor: pointer !important;
+  display: none; align-items: center; justify-content: center; font-size: 20px !important;
+  z-index: 50 !important; transition: all 0.2s !important;
+}
+#scrollBtn.on { display: flex !important; }
+#scrollBtn:hover { transform: scale(1.1) translateY(-2px) !important; }
+
+
+/* ============================================
+   FIX OVERLAP MESSAGES
+   ============================================ */
+#msgs {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  padding: 16px !important;
+}
+
+.m {
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+  position: relative !important;
+  display: block !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  margin-bottom: 4px !important;
+}
+
+/* Pentru cardurile de invitație joc */
+.game-invite-card {
+  background: rgba(248, 69, 255, 0.1) !important;
+  border: 1px solid #f845ff !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  margin-top: 6px !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  display: block !important;
+  width: 220px !important;
+  max-width: 100% !important;
+}
+.game-invite-card:hover {
+  background: rgba(248, 69, 255, 0.2) !important;
+}
+
+
+/* FIX DATE SEPARATORS (Fără sticky) */
+.date-sep {
+  position: relative !important;
+  top: auto !important;
+  z-index: 1 !important;
+  background: transparent !important;
+  padding: 16px 0 8px !important;
+  margin: 0 !important;
+  text-align: center !important;
+  display: block !important;
+  width: 100% !important;
+}
+.date-sep span {
+  background: var(--bg-primary) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+  padding: 4px 12px !important;
+  border-radius: 20px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+
+/* ============================================
+   3 ESSENTIAL FIXES (No color experiments)
+   ============================================ */
+
+/* 1. FORȚĂM DARK MODE (fără light) */
+html, body {
+  background-color: #14152a !important;
+  color: #e9eaff !important;
+  color-scheme: dark !important;
+}
+#side { background: #1d1d1d !important; }
+#main { background: #14152a !important; }
+#side header, #main header, .nc-topbar { background: #27292d !important; }
+
+/* 2. MESAJE SIMETRICE (Cyan stânga / Magenta dreapta) */
+.m:not(.me) {
+  background: #27292d !important;
+  color: #e9eaff !important;
+  border: 1px solid rgba(14, 227, 255, 0.3) !important;
+  border-left: 3px solid #0fe3ff !important;
+  border-radius: 18px 18px 18px 4px !important;
+  box-shadow: 0 0 15px rgba(14, 227, 255, 0.1) !important;
+}
+.m.me {
+  background: #27292d !important;
+  color: #e9eaff !important;
+  border: 1px solid rgba(248, 69, 255, 0.3) !important;
+  border-right: 3px solid #f845ff !important;
+  border-radius: 18px 18px 4px 18px !important;
+  box-shadow: 0 0 15px rgba(248, 69, 255, 0.1) !important;
+}
+
+/* 3. FUNDALURI (cu peliculă pentru lizibilitate) */
+#msgs {
+  background-size: cover !important;
+  background-position: center !important;
+  background-color: #14152a !important;
+  position: relative !important;
+}
+#msgs::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 12, 25, 0.7) !important;
+  pointer-events: none;
+  z-index: 0;
+  backdrop-filter: blur(3px);
+}
+#msgs.no-bg::before { display: none !important; }
+.m, .date-sep { position: relative !important; z-index: 1 !important; }
+
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0086ff">
@@ -2442,6 +2594,9 @@ async function openRoom(r){
     };
   }
   $('#msgs').innerHTML='';
+  window._lastRead = r.last_read ? parseInt(r.last_read) : 0;
+  window._dividerAdded = false;
+  $('#scrollBtn').classList.remove('on');
   if(typeof window.applyRoomBg === 'function') window.applyRoomBg(r.bg_style);
   $('#title').textContent=r.name;
   $('#sub').textContent='';
@@ -2482,13 +2637,17 @@ async function tick(){
   try{
     const id=room.id,init=last==0;
     const R=await api('msgs',0,'&room='+id+'&after='+last);
+    if (R.last_read !== undefined) window._lastRead = parseInt(R.last_read);
     if(!room||room.id!=id)return;
     status(R);
     const m=R.msgs;
     if(!m.length)return;
     const b=$('#msgs'),near=b.scrollHeight-b.scrollTop-b.clientHeight<150;
+    let dividerAdded = window._dividerAdded || false;
     m.forEach(x=>{
       last=Math.max(last,+x.id);
+      // SKIP dacă mesajul e deja în DOM (previne duplicate/overlap)
+      if (document.querySelector('#msgs .m[data-id="' + x.id + '"]')) return;
       const dDate=x.created_at.slice(0,10);
       if(dDate!==lastDate){
         lastDate=dDate;
@@ -2500,6 +2659,17 @@ async function tick(){
       const mine=x.user_id==me.id;
       d.className='m'+(mine?' me':'')+(x.deleted?' del':'');
       d.dataset.id=x.id;
+      // DOUBLE CLICK TO REPLY
+      d.ondblclick = function(e) { e.preventDefault(); setReply(x); };
+
+      // UNREAD DIVIDER
+      if (!dividerAdded && window._lastRead && x.id > window._lastRead && !mine) {
+        dividerAdded = true;
+        const div = document.createElement('div');
+        div.className = 'date-sep unread-divider';
+        div.innerHTML = '<span>Mesaje noi</span>';
+        b.append(div);
+      }
       if(!mine&&room.is_group==1){
         const a=document.createElement('div');a.className='author';
         a.textContent=x.username;
@@ -2534,6 +2704,20 @@ async function tick(){
           d.onmouseleave = function(){ d.style.boxShadow = '0 0 18px rgba(248,69,255,.3)'; d.style.transform = ''; };
           d.onclick = function(ev){ ev.stopPropagation(); openVOModal(x); };
         }
+      }
+      else if(x.type==='game_invite'){
+        const box = document.createElement('div');
+        box.className = 'game-invite-card';
+        box.innerHTML = '<div style="font-size:28px;margin-bottom:4px">🎮</div>'
+          + '<div style="font-weight:700;color:#f845ff;font-size:14px;margin-bottom:4px">'
+          + (x.file_name === 'chess' ? 'Șah' : 'X și 0') + '</div>'
+          + '<div style="font-size:12px;color:#9395bd;margin-bottom:8px">' + x.body + '</div>'
+          + '<button style="background:linear-gradient(135deg,#0086ff,#f845ff);color:#fff;border:0;padding:6px 16px;border-radius:20px;font-weight:700;cursor:pointer;font-size:12px">Joacă acum!</button>';
+        box.onclick = function(e){
+          e.stopPropagation();
+          if(typeof window.joinGame === 'function') window.joinGame(+x.file_url, x.file_name);
+        };
+        d.append(box);
       }
       else if(x.type==='image'&&x.file_url){
         const img=document.createElement('img');img.src=x.file_url;img.loading='lazy';
@@ -2966,10 +3150,16 @@ function status(R){
 
 $('#msgs').addEventListener('scroll',()=>{
   const b=$('#msgs');
-  const near=b.scrollHeight-b.scrollTop-b.clientHeight<150;
-  $('#scrollBtn').classList.toggle('on',!near&&b.scrollHeight>400);
+  const diff = b.scrollHeight - b.scrollTop - b.clientHeight;
+  $('#scrollBtn').classList.toggle('on', diff > 300);
 });
 $('#scrollBtn').onclick=()=>{$('#msgs').scrollTop=$('#msgs').scrollHeight};
+// Ascunde butonul când trimitem mesaj
+const origSend = $('#f').onsubmit;
+$('#f').onsubmit = function(e) {
+  if(origSend) origSend(e);
+  setTimeout(() => { $('#scrollBtn').classList.remove('on'); }, 100);
+};
 
 // ========== SOUND ==========
 document.addEventListener('click',()=>{try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();ac.resume()}catch(e){}},{once:true});
@@ -4859,94 +5049,243 @@ let currentGameId = null;
 let gamePollInterval = null;
 let isMyTurn = false;
 
-window.createGameInvite = async function() {
-  if(!room || !room.id) { if(typeof toast === 'function') toast('Intră într-un grup!', 'warn'); return; }
-  try {
-    const r = await api('game_create', { room_id: room.id });
-    currentGameId = r.id;
 
-    // Trimitem un mesaj special în chat
-    await api('send', {
+
+
+
+
+
+// Detectarea click-ului pe mesajul de invitație din chat
+
+
+// Polling pentru joc (la fiecare 2 secunde dacă e deschis)
+
+
+
+// ========== MULTIPLAYER GAMES (TTT + CHESS) ==========
+window.currentGameId = null;
+window.currentGameType = null;
+window.isMyTurn = false;
+window._gameP1Id = 0;
+window._gameP2Id = 0;
+window.isMultiplayerChess = false;
+
+window.createGameInvite = async function(gameType) {
+  if(!room || !room.id) {
+    if(typeof toast === 'function') toast('Intră într-un grup!', 'warn');
+    return;
+  }
+  try {
+    const r = await api('game_create', { room_id: room.id, type: gameType });
+    window.currentGameId = r.id;
+    window.currentGameType = gameType;
+    window.isMultiplayerChess = (gameType === 'chess');
+    window.isMyTurn = true;
+    window._gameP1Id = me.id;
+    window._gameP2Id = 0;
+
+    console.log('[GAME] Creating invite, gameId:', r.id);
+    const sendResult = await api('send', {
       room_id: room.id,
-      body: "🎮 Te-am invitat la X și 0! Apasă pe mesaj pentru a juca.",
+      body: 'Te-am invitat să jucăm!',
       type: 'game_invite',
-      file_url: currentGameId // Folosim file_url ca să stocăm ID-ul jocului
+      file_url: String(r.id),
+      file_name: gameType
     });
+    console.log('[GAME] Invite sent, messageId:', sendResult.id);
 
     if(typeof toast === 'function') toast('Invitație trimisă!', 'ok');
     document.getElementById('gameModal').classList.remove('on');
     reloadMsgs();
+
+    // Deschide modalul imediat pentru cel care invită
+    setTimeout(() => {
+      document.getElementById('gameModal').classList.add('on');
+      document.querySelectorAll('.game-tab')[gameType === 'chess' ? 1 : 0].click();
+    }, 300);
   } catch(e) {
     if(typeof toast === 'function') toast(e, 'err');
   }
 };
 
-function checkActiveGame() {
-  if(currentGameId) {
-    api('game_get', 0, '&id=' + currentGameId).then(g => {
-      if(g.status === 'playing') {
-        document.getElementById('gameTtt').classList.add('active');
-        renderMultiTTT(g);
-      }
-    }).catch(() => {});
-  }
-}
+window.joinGame = async function(gid, gtype) {
+  try {
+    let g = await api('game_get', 0, '&id=' + gid);
 
-function renderMultiTTT(g) {
+    // Dacă e waiting și nu sunt creatorul, mă alătur
+    if(g.status === 'waiting' && parseInt(g.p1) !== me.id) {
+      await api('game_join', { id: gid });
+      g = await api('game_get', 0, '&id=' + gid);
+    }
+
+    window.currentGameId = gid;
+    window.currentGameType = gtype || g.type;
+    window.isMultiplayerChess = (window.currentGameType === 'chess');
+    window._gameP1Id = parseInt(g.p1);
+    window._gameP2Id = parseInt(g.p2);
+    window.isMyTurn = (g.turn == me.id) && g.status === 'playing';
+
+    document.getElementById('gameModal').classList.add('on');
+    document.querySelectorAll('.game-tab')[window.currentGameType === 'chess' ? 1 : 0].click();
+    window.pollGame();
+  } catch(e) {
+    if(typeof toast === 'function') toast(e, 'err');
+  }
+};
+
+window._lastBoardState = '';
+window._lastStatus = '';
+
+window.pollGame = async function() {
+  if(!window.currentGameId) return;
+
+  // Nu poll-a dacă jocul e terminat
+  try {
+    const g = await api('game_get', 0, '&id=' + window.currentGameId);
+
+    // OPTIMIZARE: dacă board-ul și statusul nu s-au schimbat, nu re-randa
+    const newKey = g.board + '|' + g.status + '|' + g.turn;
+    if(window._lastBoardState === newKey) {
+      return;
+    }
+    window._lastBoardState = newKey;
+
+    window._gameP1Id = parseInt(g.p1);
+    window._gameP2Id = parseInt(g.p2);
+    window.isMyTurn = (g.turn == me.id) && g.status === 'playing';
+
+    if(g.type === 'ttt') {
+      renderTTTMulti(g);
+    } else {
+      renderChessMulti(g);
+    }
+  } catch(e) { /* silent */ }
+};
+
+function renderTTTMulti(g) {
   const grid = document.getElementById('tttGrid');
   if(!grid) return;
   grid.innerHTML = '';
   const board = g.board.split(',');
   const mySym = (g.p1 == me.id) ? 'X' : 'O';
-  isMyTurn = (g.turn == me.id);
-
   const statusEl = document.getElementById('tttStatus');
-  if(g.status === 'finished') statusEl.textContent = "Joc terminat!";
-  else statusEl.textContent = isMyTurn ? "Rândul tău ("+mySym+")" : "Așteaptă rândul...";
 
-  board.forEach((cell, i) => {
+  if(g.status === 'finished') {
+    statusEl.textContent = '🏆 Joc terminat!';
+  } else if(g.status === 'waiting') {
+    statusEl.textContent = '⏳ Aștept al doilea jucător...';
+  } else {
+    statusEl.textContent = window.isMyTurn ? '🎯 Rândul tău (' + mySym + ')' : '⏱️ Așteaptă...';
+  }
+
+  board.forEach(function(cell, i) {
     const div = document.createElement('div');
     div.className = 'ttt-cell';
     if(cell === 'X') div.classList.add('x');
     if(cell === 'O') div.classList.add('o');
     div.textContent = cell;
-
-    div.onclick = () => {
-      if(!isMyTurn || cell !== '' || g.status !== 'playing') return;
-      api('game_move', { id: currentGameId, pos: i }).then(() => {
-        checkActiveGame(); // Refresh instant
+    div.onclick = function() {
+      if(!window.isMyTurn || cell !== '' || g.status !== 'playing') return;
+      api('game_move', { id: window.currentGameId, pos: i }).then(() => {
+        window.pollGame();
       }).catch(err => toast(err, 'err'));
     };
     grid.appendChild(div);
   });
 }
 
-// Detectarea click-ului pe mesajul de invitație din chat
-document.addEventListener('click', function(e) {
-  const inviteMsg = e.target.closest('.m');
-  if(inviteMsg && inviteMsg.textContent.includes('Te-am invitat la X și 0')) {
-    // Găsim ID-ul jocului din dataset (ne trebuie un update mic la randare)
-    const gid = inviteMsg.dataset.gameid;
-    if(!gid) return;
-
-    e.preventDefault();
-    api('game_join', { id: gid }).then(() => {
-      currentGameId = gid;
-      document.getElementById('gameModal').classList.add('on');
-      if(typeof toast === 'function') toast('Te-ai alăturat jocului!', 'ok');
-    }).catch(err => toast(err, 'err'));
+function renderChessMulti(g) {
+  if(!window.game) window.game = new Chess();
+  if(window.game.fen() !== g.board) {
+    window.game.load(g.board);
   }
-}, true);
+  window.selectedSquare = null;
+  renderChess();
 
-// Polling pentru joc (la fiecare 2 secunde dacă e deschis)
-setInterval(() => {
+  const myColor = (g.p1 == me.id) ? 'Alb' : 'Negru';
+  const statusEl = document.getElementById('chessStatus');
+
+  if(g.status === 'finished') {
+    statusEl.textContent = '🏆 Joc terminat!';
+  } else if(g.status === 'waiting') {
+    statusEl.textContent = '⏳ Aștept al doilea jucător...';
+  } else {
+    statusEl.textContent = window.isMyTurn
+      ? '🎯 Rândul tău (' + myColor + ')'
+      : '⏱️ Așteaptă... (' + myColor + ')';
+  }
+}
+
+// Polling global - rulează doar când modalul e deschis și există joc
+setInterval(function() {
   const modal = document.getElementById('gameModal');
-  if(modal && modal.classList.contains('on') && currentGameId) {
-    checkActiveGame();
+  if(modal && modal.classList.contains('on') && window.currentGameId) {
+    // Poll doar dacă NU e rândul meu (dacă e al meu, nu se schimbă nimic până mut eu)
+    if(!window.isMyTurn) {
+      window.pollGame();
+    }
   }
-}, 2000);
+}, 1500);
+
+// Patch playChess să trimită la server când e multiplayer
+(function() {
+  const origPlayChess = window.playChess;
+  if(origPlayChess && !window._chessPatched) {
+    window._chessPatched = true;
+    const newPlayChess = function(idx) {
+      if(!window.isMultiplayerChess) {
+        return origPlayChess(idx);
+      }
+      // Multiplayer: doar dacă e rândul meu
+      if(!window.isMyTurn) {
+        if(typeof toast === 'function') toast('Nu e rândul tău!', 'warn');
+        return;
+      }
+      // Selectare piesă proprie
+      const board = window.game.board();
+      const row = Math.floor(idx / 8);
+      const col = idx % 8;
+      const piece = board[row][col];
+      const myColor = (parseInt(window._gameP1Id) === me.id) ? 'w' : 'b';
+
+      if(window.selectedSquare !== null) {
+        if(window.selectedSquare === idx) {
+          window.selectedSquare = null; renderChess(); return;
+        }
+        try {
+          const move = window.game.move({ from: window._alg(window.selectedSquare), to: window._alg(idx), promotion: 'q' });
+          if(move) {
+            window.selectedSquare = null;
+            renderChess();
+            updateChessStatus();
+            const status = window.game.game_over() ? 'finished' : 'playing';
+            api('game_move', { id: window.currentGameId, fen: window.game.fen(), status: status })
+              .then(() => window.pollGame())
+              .catch(err => toast(err, 'err'));
+            return;
+          }
+        } catch(e) {}
+      }
+
+      if(piece && piece.color === myColor) {
+        window.selectedSquare = idx;
+        renderChess();
+      } else {
+        window.selectedSquare = null;
+        renderChess();
+      }
+    };
+    // Suprascriem funcția cu una nouă
+    window.playChess = newPlayChess;
+    // Redeclarăm și funcția locală folosită intern
+    try { eval('playChess = newPlayChess;'); } catch(e) {}
+  }
+})();
+
+console.log('[GAMES] Multiplayer patch loaded');
 
 enter().catch(auth);
+
 
 
 
@@ -5078,13 +5417,19 @@ if('serviceWorker' in navigator){
     </div>
 
     <div id="gameTtt" class="game-content active">
-      <div class="game-status" id="tttStatus">Rândul lui X</div>
+      <div style="margin-bottom: 12px; text-align: center;">
+       <button class="btn" onclick="createGameInvite('ttt')" style="padding: 10px 20px; font-size: 14px;">✉️ Invită la X și 0</button>
+    </div>
+    <div class="game-status" id="tttStatus">Joacă local sau invită un prieten</div>
       <div id="tttGrid"></div>
       <button class="btn-reset" onclick="window.resetTTT()">🔄 Reîncepe</button>
     </div>
 
     <div id="gameChess" class="game-content">
-      <div class="game-status" id="chessStatus">Albul mută</div>
+      <div style="margin-bottom: 12px; text-align: center;">
+       <button class="btn" onclick="createGameInvite('chess')" style="padding: 10px 20px; font-size: 14px;">✉️ Invită la Șah</button>
+    </div>
+    <div class="game-status" id="chessStatus">Albul mută (local sau invitat)</div>
       <div id="chessBoard"></div>
       <button class="btn-reset" onclick="window.resetChess()">🔄 Reîncepe</button>
     </div>
@@ -5110,6 +5455,14 @@ var tttPlayer = "X";
 var tttActive = true;
 
 window.resetTTT = function() {
+  // Mod multiplayer
+  if(window.currentGameId && window.isMultiplayerChess !== undefined) {
+    api('game_reset', { id: window.currentGameId })
+      .then(() => { window._lastBoardState = ''; window.pollGame(); })
+      .catch(err => toast(err, 'err'));
+    return;
+  }
+  // Mod local
   tttBoard = ["","","","","","","","",""];
   tttPlayer = "X";
   tttActive = true;
@@ -5163,6 +5516,14 @@ var game = new Chess();
 var selectedSquare = null;
 
 window.resetChess = function() {
+  // Mod multiplayer
+  if(window.currentGameId) {
+    api('game_reset', { id: window.currentGameId })
+      .then(() => { window._lastBoardState = ''; window.pollGame(); })
+      .catch(err => toast(err, 'err'));
+    return;
+  }
+  // Mod local
   game = new Chess();
   selectedSquare = null;
   document.getElementById('chessStatus').textContent = "Albul mută";
@@ -5284,9 +5645,16 @@ document.addEventListener('click', function(e){
     e.stopPropagation();
     var m = document.getElementById('gameModal');
     if(!m) return;
+
+    // Resetăm modul multiplayer - deschidere locală
+    window.currentGameId = null;
+    window.isMultiplayerChess = false;
+    window._lastBoardState = '';
+    window._lastStatus = '';
+
     m.classList.add('on');
-    renderTTT();
-    renderChess();
+    if(typeof renderTTT === 'function') renderTTT();
+    if(typeof renderChess === 'function') renderChess();
   }
 }, true);
 

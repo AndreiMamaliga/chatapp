@@ -231,8 +231,11 @@ case 'set_room_bg':
  out(['ok'=>1]);
 case 'game_create':
  $r=(int)($in['room_id']??0);
+ $ty=trim($in['type']??'ttt');
+ if(!in_array($ty,['ttt','chess']))out(['error'=>'Tip joc invalid'],400);
  if(!member($r))out(['error'=>'Interzis'],403);
- q('INSERT INTO games(room_id,p1) VALUES(?,?)',[$r,$uid]);
+ $startBoard = ($ty=='chess') ? 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' : ',,,,,,,,';
+ q('INSERT INTO games(room_id,p1,type,board) VALUES(?,?,?,?)',[$r,$uid,$ty,$startBoard]);
  $gid=$pdo->lastInsertId();
  out(['id'=>$gid]);
 case 'game_join':
@@ -246,20 +249,30 @@ case 'game_get':
  $gid=(int)($_GET['id']??0);
  $g=q('SELECT * FROM games WHERE id=?',[$gid])->fetch();
  if(!$g)out(['error'=>'Joc inexistent'],404);
- if($g['p1']!=$uid && $g['p2']!=$uid)out(['error'=>'Nu faci parte din joc'],403);
+ // Permite vizualizarea dacă ești în joc SAU dacă jocul așteaptă jucători
+ if($g['p1']!=$uid && $g['p2']!=$uid && $g['status']!='waiting')out(['error'=>'Nu faci parte din joc'],403);
  out($g);
 case 'game_move':
- $gid=(int)($in['id']??0);$pos=(int)($in['pos']??-1);
+ $gid=(int)($in['id']??0);
  $g=q('SELECT * FROM games WHERE id=?',[$gid])->fetch();
  if(!$g||$g['status']!='playing')out(['error'=>'Joc inactiv'],400);
  if($g['turn']!=$uid)out(['error'=>'Nu e rândul tău'],403);
+ $nextTurn=($uid==$g['p1'])?$g['p2']:$g['p1'];
+ if($g['type']=='chess'){
+   $newFen=trim($in['fen']??'');
+   if(!$newFen||strlen($newFen)>250)out(['error'=>'FEN invalid'],400);
+   $status=trim($in['status']??'playing');
+   if(!in_array($status,['playing','finished']))$status='playing';
+   q('UPDATE games SET board=?, turn=?, status=? WHERE id=?',[$newFen,$nextTurn,$status,$gid]);
+   out(['ok'=>1]);
+ }
+ $pos=(int)($in['pos']??-1);
  if($pos<0||$pos>8)out(['error'=>'Mutare invalidă'],400);
  $board=explode(',',$g['board']);
  if($board[$pos]!='')out(['error'=>'Căsuță ocupată'],400);
  $sym=($uid==$g['p1'])?'X':'O';
  $board[$pos]=$sym;
  $newBoard=implode(',',$board);
- $nextTurn=($uid==$g['p1'])?$g['p2']:$g['p1'];
  $wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
  $status='playing';
  foreach($wins as $w){
@@ -268,6 +281,13 @@ case 'game_move':
  if(!in_array('',$board))$status='finished';
  q('UPDATE games SET board=?, turn=?, status=? WHERE id=?',[$newBoard,$nextTurn,$status,$gid]);
  out(['ok'=>1]);
-
+case 'game_reset':
+ $gid=(int)($in['id']??0);
+ $g=q('SELECT * FROM games WHERE id=?',[$gid])->fetch();
+ if(!$g)out(['error'=>'Joc inexistent'],404);
+ if($g['p1']!=$uid && $g['p2']!=$uid)out(['error'=>'Interzis'],403);
+ $startBoard = ($g['type']=='chess') ? 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' : ',,,,,,,,';
+ q('UPDATE games SET board=?, turn=?, status=? WHERE id=?',[$startBoard,$g['p1'],'playing',$gid]);
+ out(['ok'=>1]);
 }
 out(['error'=>'unknown'],404);
